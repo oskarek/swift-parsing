@@ -32,7 +32,7 @@ final class PipeTests: XCTestCase {
   func testFailureInput() {
     var input = "true"[...].utf8
     XCTAssertThrowsError(
-      try PrefixUpTo("\n".utf8).pipe {
+      try Prefix(upTo: "\n".utf8).pipe {
         Bool.parser()
       }
       .parse(&input)

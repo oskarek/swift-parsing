@@ -4,19 +4,19 @@ import XCTest
 final class PrefixThroughTests: XCTestCase {
   func testSuccess() {
     var input = "Hello,world, 42!"[...]
-    XCTAssertEqual("Hello,world, ", try PrefixThrough(", ").parse(&input))
+    XCTAssertEqual("Hello,world, ", try Prefix(through: ", ").parse(&input))
     XCTAssertEqual("42!", input)
   }
 
   func testSuccessIsEmpty() {
     var input = "Hello, world!"[...]
-    XCTAssertEqual("", try PrefixThrough("").parse(&input))
+    XCTAssertEqual("", try Prefix(through: "").parse(&input))
     XCTAssertEqual("Hello, world!", input)
   }
 
   func testFailureIsEmpty() {
     var input = ""[...]
-    XCTAssertThrowsError(try PrefixThrough(", ").parse(&input)) { error in
+    XCTAssertThrowsError(try Prefix(through: ", ").parse(&input)) { error in
       XCTAssertEqual(
         """
         error: unexpected input
@@ -24,7 +24,7 @@ final class PrefixThroughTests: XCTestCase {
         1 |
           | ^ expected prefix through ", "
         """,
-        "\(error)"
+    "\(error)"
       )
     }
     XCTAssertEqual("", input)
@@ -32,7 +32,7 @@ final class PrefixThroughTests: XCTestCase {
 
   func testFailureNoMatch() {
     var input = "Hello world!"[...]
-    XCTAssertThrowsError(try PrefixThrough(", ").parse(&input)) { error in
+    XCTAssertThrowsError(try Prefix(through: ", ").parse(&input)) { error in
       XCTAssertEqual(
         """
         error: unexpected input
@@ -48,13 +48,29 @@ final class PrefixThroughTests: XCTestCase {
 
   func testUTF8() {
     var input = "Hello,world, 42!"[...].utf8
-    XCTAssertEqual("Hello,world, ", Substring(try PrefixThrough(", ".utf8).parse(&input)))
+    XCTAssertEqual("Hello,world, ", Substring(try Prefix(through: ", "[...].utf8).parse(&input)))
     XCTAssertEqual("42!", Substring(input))
   }
 
   func testPrint() throws {
     var input = ""[...]
-    try PrefixThrough(",").print("Hello,", into: &input)
+    try Prefix(through: ",").print("Hello,", into: &input)
     XCTAssertEqual("Hello,", input)
+  }
+
+  func testPrefixRangeFromFailure() {
+    var input = "42 Hello, world!"[...]
+    XCTAssertThrowsError(try Prefix(17..., through: "world!").parse(&input)) { error in
+      XCTAssertEqual(
+        """
+        error: unexpected input
+         --> input:1:11
+        1 | 42 Hello, world!
+          |           ^ expected 1 more element before the prefix end sequence
+        """,
+        "\(error)"
+      )
+    }
+    XCTAssertEqual("", input)
   }
 }

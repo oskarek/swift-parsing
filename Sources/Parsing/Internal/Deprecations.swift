@@ -584,7 +584,7 @@ extension Prefix {
   ) {
     self.minimum = minLength
     self.maximum = maxLength
-    self.predicate = predicate
+    self.ending = .elemSatisfies { !predicate($0) }
   }
 
   @available(
@@ -598,7 +598,7 @@ extension Prefix {
   ) {
     self.minimum = minLength
     self.maximum = nil
-    self.predicate = predicate
+    self.ending = .elemSatisfies { !predicate($0) }
   }
 
   @available(
@@ -612,7 +612,7 @@ extension Prefix {
   ) {
     self.minimum = 0
     self.maximum = maxLength
-    self.predicate = predicate
+    self.ending = .elemSatisfies { !predicate($0) }
   }
 }
 
