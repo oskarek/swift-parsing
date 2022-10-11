@@ -46,6 +46,10 @@ public enum OneOfBuilder {
     parser
   }
 
+  public static func buildExpression<P: Parser>(_ expression: P) -> P {
+    expression
+  }
+
   /// Provides support for `if`-`else` statements in ``OneOfBuilder`` blocks, producing a
   /// conditional parser for the `if` branch.
   ///

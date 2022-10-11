@@ -20,6 +20,10 @@ public enum ParserBuilder {
     parser
   }
 
+  public static func buildExpression<P: Parser>(_ expression: P) -> P {
+    expression
+  }
+
   /// Provides support for `if`-`else` statements in ``ParserBuilder`` blocks, producing a
   /// conditional parser for the `if` branch.
   ///
