@@ -9430,11 +9430,7 @@ extension ParserBuilder {
 }
 
 extension OneOfBuilder {
-  public struct OneOf2<P0: Parser, P1: Parser>: Parser
-  where
-    P0.Input == P1.Input,
-    P0.Output == P1.Output
-  {
+  public struct OneOf2<P0: Parser<Input, Output>, P1: Parser<Input, Output>>: Parser {
     public let p0: P0, p1: P1
 
     @inlinable public init(_ p0: P0, _ p1: P1) {
@@ -9442,7 +9438,7 @@ extension OneOfBuilder {
       self.p1 = p1
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout P0.Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -9461,11 +9457,9 @@ extension OneOfBuilder {
 extension OneOfBuilder.OneOf2: ParserPrinter
 where
   P0: ParserPrinter,
-  P1: ParserPrinter,
-  P0.Input == P1.Input,
-  P0.Output == P1.Output
+  P1: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p1.print(output, into: &input) } catch let e1 {
       do {
@@ -9489,13 +9483,7 @@ extension OneOfBuilder {
 }
 
 extension OneOfBuilder {
-  public struct OneOf3<P0: Parser, P1: Parser, P2: Parser>: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output
-  {
+  public struct OneOf3<P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>>: Parser {
     public let p0: P0, p1: P1, p2: P2
 
     @inlinable public init(_ p0: P0, _ p1: P1, _ p2: P2) {
@@ -9504,7 +9492,7 @@ extension OneOfBuilder {
       self.p2 = p2
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout P0.Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -9529,13 +9517,9 @@ extension OneOfBuilder.OneOf3: ParserPrinter
 where
   P0: ParserPrinter,
   P1: ParserPrinter,
-  P2: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output
+  P2: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p2.print(output, into: &input) } catch let e2 {
       do {
@@ -9564,15 +9548,9 @@ extension OneOfBuilder {
 }
 
 extension OneOfBuilder {
-  public struct OneOf4<P0: Parser, P1: Parser, P2: Parser, P3: Parser>: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output
-  {
+  public struct OneOf4<
+		P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>, P3: Parser<Input, Output>
+	>: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3
 
     @inlinable public init(_ p0: P0, _ p1: P1, _ p2: P2, _ p3: P3) {
@@ -9582,7 +9560,7 @@ extension OneOfBuilder {
       self.p3 = p3
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -9613,15 +9591,9 @@ where
   P0: ParserPrinter,
   P1: ParserPrinter,
   P2: ParserPrinter,
-  P3: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output
+  P3: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p3.print(output, into: &input) } catch let e3 {
       do {
@@ -9655,17 +9627,10 @@ extension OneOfBuilder {
 }
 
 extension OneOfBuilder {
-  public struct OneOf5<P0: Parser, P1: Parser, P2: Parser, P3: Parser, P4: Parser>: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P3.Input == P4.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output,
-    P3.Output == P4.Output
-  {
+  public struct OneOf5<
+		P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>,
+		P3: Parser<Input, Output>, P4: Parser<Input, Output>
+	>: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3, p4: P4
 
     @inlinable public init(_ p0: P0, _ p1: P1, _ p2: P2, _ p3: P3, _ p4: P4) {
@@ -9676,7 +9641,7 @@ extension OneOfBuilder {
       self.p4 = p4
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -9713,17 +9678,9 @@ where
   P1: ParserPrinter,
   P2: ParserPrinter,
   P3: ParserPrinter,
-  P4: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P3.Input == P4.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output,
-  P3.Output == P4.Output
+  P4: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p4.print(output, into: &input) } catch let e4 {
       do {
@@ -9762,20 +9719,10 @@ extension OneOfBuilder {
 }
 
 extension OneOfBuilder {
-  public struct OneOf6<P0: Parser, P1: Parser, P2: Parser, P3: Parser, P4: Parser, P5: Parser>:
-    Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P3.Input == P4.Input,
-    P4.Input == P5.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output,
-    P3.Output == P4.Output,
-    P4.Output == P5.Output
-  {
+  public struct OneOf6<
+		P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>,
+		P3: Parser<Input, Output>, P4: Parser<Input, Output>, P5: Parser<Input, Output>
+	>: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5
 
     @inlinable public init(_ p0: P0, _ p1: P1, _ p2: P2, _ p3: P3, _ p4: P4, _ p5: P5) {
@@ -9787,7 +9734,7 @@ extension OneOfBuilder {
       self.p5 = p5
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -9830,19 +9777,9 @@ where
   P2: ParserPrinter,
   P3: ParserPrinter,
   P4: ParserPrinter,
-  P5: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P3.Input == P4.Input,
-  P4.Input == P5.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output,
-  P3.Output == P4.Output,
-  P4.Output == P5.Output
+  P5: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p5.print(output, into: &input) } catch let e5 {
       do {
@@ -9887,22 +9824,9 @@ extension OneOfBuilder {
 
 extension OneOfBuilder {
   public struct OneOf7<
-    P0: Parser, P1: Parser, P2: Parser, P3: Parser, P4: Parser, P5: Parser, P6: Parser
-  >: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P3.Input == P4.Input,
-    P4.Input == P5.Input,
-    P5.Input == P6.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output,
-    P3.Output == P4.Output,
-    P4.Output == P5.Output,
-    P5.Output == P6.Output
-  {
+    P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>,
+		P3: Parser<Input, Output>, P4: Parser<Input, Output>, P5: Parser<Input, Output>, P6: Parser<Input, Output>
+  >: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6
 
     @inlinable public init(_ p0: P0, _ p1: P1, _ p2: P2, _ p3: P3, _ p4: P4, _ p5: P5, _ p6: P6) {
@@ -9915,7 +9839,7 @@ extension OneOfBuilder {
       self.p6 = p6
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -9964,21 +9888,9 @@ where
   P3: ParserPrinter,
   P4: ParserPrinter,
   P5: ParserPrinter,
-  P6: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P3.Input == P4.Input,
-  P4.Input == P5.Input,
-  P5.Input == P6.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output,
-  P3.Output == P4.Output,
-  P4.Output == P5.Output,
-  P5.Output == P6.Output
+  P6: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p6.print(output, into: &input) } catch let e6 {
       do {
@@ -10028,24 +9940,10 @@ extension OneOfBuilder {
 
 extension OneOfBuilder {
   public struct OneOf8<
-    P0: Parser, P1: Parser, P2: Parser, P3: Parser, P4: Parser, P5: Parser, P6: Parser, P7: Parser
-  >: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P3.Input == P4.Input,
-    P4.Input == P5.Input,
-    P5.Input == P6.Input,
-    P6.Input == P7.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output,
-    P3.Output == P4.Output,
-    P4.Output == P5.Output,
-    P5.Output == P6.Output,
-    P6.Output == P7.Output
-  {
+    P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>,
+		P3: Parser<Input, Output>, P4: Parser<Input, Output>, P5: Parser<Input, Output>,
+		P6: Parser<Input, Output>, P7: Parser<Input, Output>
+  >: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, p7: P7
 
     @inlinable public init(
@@ -10061,7 +9959,7 @@ extension OneOfBuilder {
       self.p7 = p7
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -10116,23 +10014,9 @@ where
   P4: ParserPrinter,
   P5: ParserPrinter,
   P6: ParserPrinter,
-  P7: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P3.Input == P4.Input,
-  P4.Input == P5.Input,
-  P5.Input == P6.Input,
-  P6.Input == P7.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output,
-  P3.Output == P4.Output,
-  P4.Output == P5.Output,
-  P5.Output == P6.Output,
-  P6.Output == P7.Output
+  P7: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p7.print(output, into: &input) } catch let e7 {
       do {
@@ -10187,27 +10071,10 @@ extension OneOfBuilder {
 
 extension OneOfBuilder {
   public struct OneOf9<
-    P0: Parser, P1: Parser, P2: Parser, P3: Parser, P4: Parser, P5: Parser, P6: Parser, P7: Parser,
-    P8: Parser
-  >: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P3.Input == P4.Input,
-    P4.Input == P5.Input,
-    P5.Input == P6.Input,
-    P6.Input == P7.Input,
-    P7.Input == P8.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output,
-    P3.Output == P4.Output,
-    P4.Output == P5.Output,
-    P5.Output == P6.Output,
-    P6.Output == P7.Output,
-    P7.Output == P8.Output
-  {
+    P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>,
+		P3: Parser<Input, Output>, P4: Parser<Input, Output>, P5: Parser<Input, Output>,
+		P6: Parser<Input, Output>, P7: Parser<Input, Output>, P8: Parser<Input, Output>
+  >: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, p7: P7, p8: P8
 
     @inlinable public init(
@@ -10224,7 +10091,7 @@ extension OneOfBuilder {
       self.p8 = p8
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -10285,25 +10152,9 @@ where
   P5: ParserPrinter,
   P6: ParserPrinter,
   P7: ParserPrinter,
-  P8: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P3.Input == P4.Input,
-  P4.Input == P5.Input,
-  P5.Input == P6.Input,
-  P6.Input == P7.Input,
-  P7.Input == P8.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output,
-  P3.Output == P4.Output,
-  P4.Output == P5.Output,
-  P5.Output == P6.Output,
-  P6.Output == P7.Output,
-  P7.Output == P8.Output
+  P8: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p8.print(output, into: &input) } catch let e8 {
       do {
@@ -10363,29 +10214,10 @@ extension OneOfBuilder {
 
 extension OneOfBuilder {
   public struct OneOf10<
-    P0: Parser, P1: Parser, P2: Parser, P3: Parser, P4: Parser, P5: Parser, P6: Parser, P7: Parser,
-    P8: Parser, P9: Parser
-  >: Parser
-  where
-    P0.Input == P1.Input,
-    P1.Input == P2.Input,
-    P2.Input == P3.Input,
-    P3.Input == P4.Input,
-    P4.Input == P5.Input,
-    P5.Input == P6.Input,
-    P6.Input == P7.Input,
-    P7.Input == P8.Input,
-    P8.Input == P9.Input,
-    P0.Output == P1.Output,
-    P1.Output == P2.Output,
-    P2.Output == P3.Output,
-    P3.Output == P4.Output,
-    P4.Output == P5.Output,
-    P5.Output == P6.Output,
-    P6.Output == P7.Output,
-    P7.Output == P8.Output,
-    P8.Output == P9.Output
-  {
+    P0: Parser<Input, Output>, P1: Parser<Input, Output>, P2: Parser<Input, Output>,
+		P3: Parser<Input, Output>, P4: Parser<Input, Output>, P5: Parser<Input, Output>,
+		P6: Parser<Input, Output>, P7: Parser<Input, Output>, P8: Parser<Input, Output>, P9: Parser<Input, Output>
+  >: Parser {
     public let p0: P0, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, p7: P7, p8: P8, p9: P9
 
     @inlinable public init(
@@ -10404,7 +10236,7 @@ extension OneOfBuilder {
       self.p9 = p9
     }
 
-    @inlinable public func parse(_ input: inout P0.Input) rethrows -> P0.Output {
+    @inlinable public func parse(_ input: inout Input) rethrows -> Output {
       let original = input
       do { return try self.p0.parse(&input) } catch let e0 {
         do {
@@ -10471,27 +10303,9 @@ where
   P6: ParserPrinter,
   P7: ParserPrinter,
   P8: ParserPrinter,
-  P9: ParserPrinter,
-  P0.Input == P1.Input,
-  P1.Input == P2.Input,
-  P2.Input == P3.Input,
-  P3.Input == P4.Input,
-  P4.Input == P5.Input,
-  P5.Input == P6.Input,
-  P6.Input == P7.Input,
-  P7.Input == P8.Input,
-  P8.Input == P9.Input,
-  P0.Output == P1.Output,
-  P1.Output == P2.Output,
-  P2.Output == P3.Output,
-  P3.Output == P4.Output,
-  P4.Output == P5.Output,
-  P5.Output == P6.Output,
-  P6.Output == P7.Output,
-  P7.Output == P8.Output,
-  P8.Output == P9.Output
+  P9: ParserPrinter
 {
-  @inlinable public func print(_ output: P0.Output, into input: inout P0.Input) rethrows {
+  @inlinable public func print(_ output: Output, into input: inout Input) rethrows {
     let original = input
     do { try self.p9.print(output, into: &input) } catch let e9 {
       do {

@@ -17,7 +17,7 @@
 /// try currency.parse("$100") // (.usd, 100)
 /// ```
 @resultBuilder
-public enum OneOfBuilder {
+public enum OneOfBuilder<Input, Output> {
   /// Provides support for `for`-`in` loops in ``OneOfBuilder`` blocks.
   ///
   /// Useful for building up a parser from a dynamic source, like for a case-iterable enum:
@@ -36,17 +36,17 @@ public enum OneOfBuilder {
   /// }
   /// ```
   @inlinable
-  public static func buildArray<P>(_ parsers: [P]) -> Parsers.OneOfMany<P> {
+	public static func buildArray<P: Parser<Input, Output>>(_ parsers: [P]) -> Parsers.OneOfMany<P> {
     .init(parsers)
   }
 
   /// Provides support for specifying a parser in ``OneOfBuilder`` blocks.
   @inlinable
-  static public func buildBlock<P: Parser>(_ parser: P) -> P {
+  static public func buildBlock<P: Parser<Input, Output>>(_ parser: P) -> P {
     parser
   }
 
-  public static func buildExpression<P: Parser>(_ expression: P) -> P {
+  public static func buildExpression<P: Parser<Input, Output>>(_ expression: P) -> P {
     expression
   }
 
@@ -63,7 +63,7 @@ public enum OneOfBuilder {
   /// }
   /// ```
   @inlinable
-  public static func buildEither<TrueParser, FalseParser>(
+  public static func buildEither<TrueParser: Parser<Input, Output>, FalseParser: Parser<Input, Output>>(
     first parser: TrueParser
   ) -> Parsers.Conditional<TrueParser, FalseParser> {
     .first(parser)
@@ -82,7 +82,7 @@ public enum OneOfBuilder {
   /// }
   /// ```
   @inlinable
-  public static func buildEither<TrueParser, FalseParser>(
+  public static func buildEither<TrueParser: Parser<Input, Output>, FalseParser: Parser<Input, Output>>(
     second parser: FalseParser
   ) -> Parsers.Conditional<TrueParser, FalseParser> {
     .second(parser)
@@ -103,14 +103,14 @@ public enum OneOfBuilder {
   /// }
   /// ```
   @inlinable
-  public static func buildIf<P>(_ parser: P?) -> OptionalOneOf<P> {
+  public static func buildIf<P: Parser<Input, Output>>(_ parser: P?) -> OptionalOneOf<P> {
     .init(wrapped: parser)
   }
 
   /// Provides support for `if #available` statements in ``OneOfBuilder`` blocks, producing an
   /// optional parser.
   @inlinable
-  public static func buildLimitedAvailability<P>(_ parser: P?) -> OptionalOneOf<P> {
+  public static func buildLimitedAvailability<P: Parser<Input, Output>>(_ parser: P?) -> OptionalOneOf<P> {
     .init(wrapped: parser)
   }
 
@@ -157,3 +157,5 @@ extension OneOfBuilder.OptionalOneOf: ParserPrinter where Wrapped: ParserPrinter
     try wrapped.print(output, into: &input)
   }
 }
+
+public typealias OneOfBuilderOf<P: Parser> = OneOfBuilder<P.Input, P.Output>
