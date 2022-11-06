@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parsing - Many</title>
+    <link rel="stylesheet" type="text/css" href="/swift-parsing/all.css" media="all" />
+</head>
+<body>
+    <header>
+        <a href="/swift-parsing/">
+            <strong>
+                Parsing
+            </strong>
+            <span>Documentation</span>
+        </a>
+    </header>
+
+    <!--
+    <form class="search">
+        <input type="search" placeholder="Search" />
+    </form>
+    -->
+
+    <nav>
+        <div class="wrapper">
+            <h2>On This Page</h2>
+            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Conforms To</a></li></ul></li><li><a href="#initializers">Initializers</a><ul><li class="initializer"><a href="#many.init(_:into:atleast:atmost:separator:_:)">init(_:​into:​at​Least:​at​Most:​separator:​_:​)</a></li></ul></li><li><a href="#properties">Properties</a><ul><li class="variable"><a href="#many.initialresult">initial​Result</a></li><li class="variable"><a href="#many.maximum">maximum</a></li><li class="variable"><a href="#many.minimum">minimum</a></li><li class="variable"><a href="#many.separator">separator</a></li><li class="variable"><a href="#many.updateaccumulatingresult">update​Accumulating​Result</a></li><li class="variable"><a href="#many.upstream">upstream</a></li></ul></li><li><a href="#methods">Methods</a><ul><li class="function"><a href="#many.parse(_:)">parse(_:​)</a></li></ul></li></ol>
+        </div>
+    </nav>
+
+    <main>
+        <article>
+            <h1>
+    <small>Structure</small>
+    <code class="name">Many</code>
+</h1>
+
+<div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">struct</span> <span class="type">Many</span>&lt;<span class="variable">Upstream</span>, <span class="variable">Result</span>, <span class="variable">Separator</span>&gt;: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>
+<span class="keyword">where</span>
+  <span class="type">Upstream</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>,
+  <span class="type">Separator</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>,
+  <span class="type">Upstream</span>.<span class="type">Input</span> == <span class="type">Separator</span>.<span class="type">Input</span></body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>A parser that attempts to run another parser as many times as specified, accumulating the result
+of the outputs.</p>
+
+</div>
+<div class="discussion">
+    <p>For example, given a comma-separated string of numbers, one could parse out an array of
+integers:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">input</span> = <span class="string literal">"</span><span class="string literal">1,2,3</span><span class="string literal">"</span>[...]
+<span class="keyword">let</span> <span class="variable">output</span> = <span class="variable">Many</span>(<span class="variable">Int</span>.<span class="variable">parser</span>(), <span class="variable">separator</span>: <span class="string literal">"</span><span class="string literal">,</span><span class="string literal">"</span>).<span class="variable">parse</span>(&amp;<span class="variable">input</span>)
+<span class="variable">precondition</span>(<span class="variable">input</span> == <span class="string literal">"</span><span class="string literal"/><span class="string literal">"</span>)
+<span class="variable">precondition</span>(<span class="variable">output</span> == [<span class="number literal">1</span>, <span class="number literal">2</span>, <span class="number literal">3</span>])
+</code></pre></body></html>
+<p>The most general version of <code>Many</code> takes a closure that can customize how outputs accumulate,
+much like <code>Sequence.reduce(into:_)</code>. We could, for example, sum the numbers as we parse them
+instead of accumulating each value in an array:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">sumParser</span> = <span class="variable">Many</span>(
+  <span class="variable">Int</span>.<span class="variable">parser</span>(<span class="variable">of</span>: <span class="type">Substring</span>.<span class="keyword">self</span>),
+  <span class="variable">into</span>: <span class="number literal">0</span>,
+  <span class="variable">separator</span>: <a href="/swift-parsing/StartsWith"><span class="type">StartsWith</span></a>(<span class="string literal">"</span><span class="string literal">,</span><span class="string literal">"</span>),
+  +=
+)
+<span class="keyword">var</span> <span class="variable">input</span> = <span class="string literal">"</span><span class="string literal">1,2,3</span><span class="string literal">"</span>[...]
+<span class="keyword">let</span> <span class="variable">output</span> = <span class="variable">Many</span>(<span class="variable">Int</span>.<span class="variable">parser</span>(), <span class="variable">into</span>: <span class="number literal">0</span>, <span class="variable">separator</span>: <span class="string literal">"</span><span class="string literal">,</span><span class="string literal">"</span>).<span class="variable">parse</span>(&amp;<span class="variable">input</span>)
+<span class="variable">precondition</span>(<span class="variable">input</span> == <span class="string literal">"</span><span class="string literal"/><span class="string literal">"</span>)
+<span class="variable">precondition</span>(<span class="variable">output</span> == <span class="number literal">6</span>)
+</code></pre></body></html>
+</div>
+<section id="relationships">
+    <h2 hidden>Relationships</h2>
+        <figure>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: %269 Pages: 1 -->
+<svg width="872pt" height="116pt"
+ viewBox="0.00 0.00 872.00 116.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">
+<title>%269</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-112 868,-112 868,4 -4,4"/>
+<!-- Many -->
+<g id="node1" class="node structure current">
+<title>Many</title>
+<g id="a_node1"><a xlink:href="/swift-parsing/Many" xlink:title="Many">
+<path fill="none" stroke="#000000" stroke-width="3" d="M528,-108C528,-108 336,-108 336,-108 330,-108 324,-102 324,-96 324,-96 324,-84 324,-84 324,-78 330,-72 336,-72 336,-72 528,-72 528,-72 534,-72 540,-78 540,-84 540,-84 540,-96 540,-96 540,-102 534,-108 528,-108"/>
+<text text-anchor="middle" x="432" y="-86.3" font-family="Menlo" font-size="14.00" fill="#000000">Many</text>
+</a>
+</g>
+</g>
+<!-- Parser -->
+<g id="node2" class="node protocol">
+<title>Parser</title>
+<g id="a_node2"><a xlink:href="/swift-parsing/Parser" xlink:title="Parser">
+<path fill="none" stroke="#000000" d="M528,-36C528,-36 336,-36 336,-36 330,-36 324,-30 324,-24 324,-24 324,-12 324,-12 324,-6 330,0 336,0 336,0 528,0 528,0 534,0 540,-6 540,-12 540,-12 540,-24 540,-24 540,-30 534,-36 528,-36"/>
+<text text-anchor="middle" x="432" y="-14.3" font-family="Menlo" font-size="14.00" fill="#000000">Parser</text>
+</a>
+</g>
+</g>
+<!-- Many&#45;&gt;Parser -->
+<g id="edge1" class="edge conformsTo">
+<title>Many&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M432,-71.8314C432,-64.131 432,-54.9743 432,-46.4166"/>
+<polygon fill="#000000" stroke="#000000" points="435.5001,-46.4132 432,-36.4133 428.5001,-46.4133 435.5001,-46.4132"/>
+</g>
+</g>
+</svg>
+
+
+    <figcaption hidden>Inheritance graph for Many.</figcaption>
+</figure>
+        <h3>Conforms To</h3>
+<dl>
+    <dt class="protocol"><code><a href="/swift-parsing/Parser">Parser</a></code></dt>
+<dd><p>Declares a type that can parse an <code>Input</code> value into an <code>Output</code> value.</p>
+</dd>
+</dl>
+</section>
+    <section id="initializers">
+        <h2>Initializers</h2>
+
+        <div role="article" class="initializer" id="many.init(_:into:atleast:atmost:separator:_:)">
+    <h3>
+        <code><a href="#many.init(_:into:atleast:atmost:separator:_:)">init(_:​into:​at​Least:​at​Most:​separator:​_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">init</span>(
+    <span class="keyword">_</span> <span class="variable">upstream</span>: <span class="type">Upstream</span>,
+    <span class="variable">into</span> <span class="variable">initialResult</span>: <span class="type">Result</span>,
+    <span class="variable">atLeast</span> <span class="variable">minimum</span>: <span class="type">Int</span> = <span class="number literal">0</span>,
+    <span class="variable">atMost</span> <span class="variable">maximum</span>: <span class="type">Int</span> = .<span class="variable">max</span>,
+    <span class="variable">separator</span>: <span class="type">Separator</span>,
+    <span class="keyword">_</span> <span class="variable">updateAccumulatingResult</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="keyword">inout</span> <span class="type">Result</span>, <span class="type">Upstream</span>.<span class="type">Output</span>) -&gt; <span class="type">Void</span>
+  )  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Initializes a parser that attempts to run the given parser at least and at most the given
+number of times, accumulating the outputs into a result with a given closure.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>upstream</th>
+    <td><code class="type">Upstream</code></td>
+    <td><p>Another parser.</p>
+</td>
+</tr>
+<tr>
+    <th>minimum</th>
+    <td><code class="type">Int</code></td>
+    <td><p>The minimum number of times to run this parser and consider parsing to be successful.</p>
+</td>
+</tr>
+<tr>
+    <th>maximum</th>
+    <td><code class="type">Int</code></td>
+    <td><p>The maximum number of times to run this parser before returning the output.</p>
+</td>
+</tr>
+<tr>
+    <th>separator</th>
+    <td><code class="type">Separator</code></td>
+    <td><p>A parser that consumes input between each parsed output.</p>
+</td>
+</tr>
+<tr>
+    <th>update​Accumulating​Result</th>
+    <td><code class="type">@escaping (inout Result, Upstream.​Output) -&gt; Void</code></td>
+    <td><p>A closure that updates the accumulating result with each output of the upstream parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+</div>
+    </section>
+    <section id="properties">
+        <h2>Properties</h2>
+
+        <div role="article" class="variable" id="many.initialresult">
+    <h3>
+        <code><a href="#many.initialresult">initial​Result</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">let</span> <span class="variable">initialResult</span>: <span class="type">Result</span></body></html></code></pre>
+</div>
+</div>
+<div role="article" class="variable" id="many.maximum">
+    <h3>
+        <code><a href="#many.maximum">maximum</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">let</span> <span class="variable">maximum</span>: <span class="type">Int</span></body></html></code></pre>
+</div>
+</div>
+<div role="article" class="variable" id="many.minimum">
+    <h3>
+        <code><a href="#many.minimum">minimum</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">let</span> <span class="variable">minimum</span>: <span class="type">Int</span></body></html></code></pre>
+</div>
+</div>
+<div role="article" class="variable" id="many.separator">
+    <h3>
+        <code><a href="#many.separator">separator</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">let</span> <span class="variable">separator</span>: <span class="type">Separator</span>? </body></html></code></pre>
+</div>
+</div>
+<div role="article" class="variable" id="many.updateaccumulatingresult">
+    <h3>
+        <code><a href="#many.updateaccumulatingresult">update​Accumulating​Result</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">let</span> <span class="variable">updateAccumulatingResult</span>: (<span class="keyword">inout</span> <span class="type">Result</span>, <span class="type">Upstream</span>.<span class="type">Output</span>) -&gt; <span class="type">Void</span></body></html></code></pre>
+</div>
+</div>
+<div role="article" class="variable" id="many.upstream">
+    <h3>
+        <code><a href="#many.upstream">upstream</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">let</span> <span class="variable">upstream</span>: <span class="type">Upstream</span></body></html></code></pre>
+</div>
+</div>
+    </section>
+    <section id="methods">
+        <h2>Methods</h2>
+
+        <div role="article" class="function" id="many.parse(_:)">
+    <h3>
+        <code><a href="#many.parse(_:)">parse(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">parse</span>(<span class="keyword">_</span> <span class="variable">input</span>: <span class="keyword">inout</span> <span class="type">Upstream</span>.<span class="type">Input</span>) -&gt; <span class="type">Result</span>?  </body></html></code></pre>
+</div>
+</div>
+    </section>
+
+
+
+        </article>
+    </main>
+
+    <footer>
+        <p>
+    Generated on <time datetime="2021-10-27T21:44:06+0000">October 27, 2021</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-rc.1</span>.
+</p>
+    </footer>
+</body>
+</html>

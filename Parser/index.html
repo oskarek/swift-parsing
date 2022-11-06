@@ -1,0 +1,2108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parsing - Parser</title>
+    <link rel="stylesheet" type="text/css" href="/swift-parsing/all.css" media="all" />
+</head>
+<body>
+    <header>
+        <a href="/swift-parsing/">
+            <strong>
+                Parsing
+            </strong>
+            <span>Documentation</span>
+        </a>
+    </header>
+
+    <!--
+    <form class="search">
+        <input type="search" placeholder="Search" />
+    </form>
+    -->
+
+    <nav>
+        <div class="wrapper">
+            <h2>On This Page</h2>
+            <ol><li><a href="#relationships">Relationships</a><ul><li><a href="#relationships">Types Conforming to Parser</a></li></ul></li><li><a href="#default implementations">Default Implementations</a><ul><li class="function"><a href="#parser.parse(_:)">parse(_:​)</a></li><li class="function"><a href="#parser.parse(_:)">parse(_:​)</a></li><li class="function"><a href="#parser.parse(_:)">parse(_:​)</a></li><li class="function"><a href="#parser.parse(_:)">parse(_:​)</a></li><li class="function"><a href="#parser.parse(_:)">parse(_:​)</a></li><li class="function"><a href="#parser.erasetoanyparser()">erase​ToAny​Parser()</a></li><li class="function"><a href="#parser.compactmap(_:)">compact​Map(_:​)</a></li><li class="function"><a href="#parser.filter(_:)">filter(_:​)</a></li><li class="function"><a href="#parser.flatmap(_:)">flat​Map(_:​)</a></li><li class="function"><a href="#parser.map(_:)">map(_:​)</a></li><li class="function"><a href="#parser.orelse(_:)">or​Else(_:​)</a></li><li class="function"><a href="#parser.pipe(_:)">pipe(_:​)</a></li><li class="function"><a href="#parser.pullback(_:)">pullback(_:​)</a></li><li class="function"><a href="#parser.ignoreoutput()">ignore​Output()</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.skip(_:)">skip(_:​)</a></li><li class="variable"><a href="#parser.stream">stream</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="function"><a href="#parser.take(_:)">take(_:​)</a></li><li class="variable"><a href="#parser.utf8">utf8</a></li><li class="variable"><a href="#parser.utf8">utf8</a></li><li class="variable"><a href="#parser.unicodescalars">unicode​Scalars</a></li></ul></li><li><a href="#requirements">Requirements</a><ul><li class="associatedtype"><a href="#parser.input">Input</a></li><li class="associatedtype"><a href="#parser.output">Output</a></li><li class="function"><a href="#parser.parse(_:)">parse(_:​)</a></li></ul></li></ol>
+        </div>
+    </nav>
+
+    <main>
+        <article>
+            <h1>
+    <small>Protocol</small>
+    <code class="name">Parser</code>
+</h1>
+
+<div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">public</span> <span class="keyword">protocol</span> <span class="type">Parser</span>  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Declares a type that can parse an <code>Input</code> value into an <code>Output</code> value.</p>
+
+</div>
+<div class="discussion">
+    <p>A parser attempts to parse a nebulous piece of data, represented by the <code>Input</code> associated type,
+into something more well-structured, represented by the <code>Output</code> associated type. The parser
+implements the <code>parse(_:)-4u8o0</code> method, which is handed an <code>inout Input</code>, and its job is to
+turn this into an <code>Output</code> if possible, or otherwise return <code>nil</code> if it cannot, which represents
+a parsing failure.</p>
+
+<p>The argument of the <code>parse(_:)-4u8o0</code> function is <code>inout</code> because a parser will usually
+consume some of the input in order to produce an output. For example, we can use the
+<code>Int.parser()</code> parser to extract an integer from the beginning of a <code>UTF8View</code> and consume that
+portion of the string:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">input</span> = <span class="string literal">"</span><span class="string literal">123 Hello world</span><span class="string literal">"</span>[...].<span class="variable">utf8</span>
+<span class="keyword">let</span> <span class="variable">output</span> = <span class="variable">Int</span>.<span class="variable">parser</span>.<span class="variable">parse</span>(&amp;<span class="variable">input</span>)
+<span class="variable">precondition</span>(<span class="variable">output</span> == <span class="number literal">123</span>)
+<span class="variable">precondition</span>(<span class="variable">input</span>.<span class="variable">elementsEqual</span>(<span class="string literal">"</span><span class="string literal"> Hello world</span><span class="string literal">"</span>[...].<span class="variable">utf8</span>))
+</code></pre></body></html>
+<p>It is best practice for a parser to <em>not</em> consume any of the input if it fails to produce an
+output. This allows for &quot;backtracking&quot;, which means if a parser fails then another parser can
+try on the original input.</p>
+
+</div>
+<section id="relationships">
+    <h2 hidden>Relationships</h2>
+        <figure>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: %131 Pages: 1 -->
+<svg width="1902pt" height="360pt"
+ viewBox="0.00 0.00 1901.82 360.20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 356.2045)">
+<title>%131</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-356.2045 1897.8189,-356.2045 1897.8189,4 -4,4"/>
+<!-- Parser -->
+<g id="node1" class="node protocol current">
+<title>Parser</title>
+<g id="a_node1"><a xlink:href="/swift-parsing/Parser" xlink:title="Parser">
+<path fill="none" stroke="#000000" stroke-width="3" d="M1047.0756,-194.0405C1047.0756,-194.0405 855.0756,-194.0405 855.0756,-194.0405 849.0756,-194.0405 843.0756,-188.0405 843.0756,-182.0405 843.0756,-182.0405 843.0756,-170.0405 843.0756,-170.0405 843.0756,-164.0405 849.0756,-158.0405 855.0756,-158.0405 855.0756,-158.0405 1047.0756,-158.0405 1047.0756,-158.0405 1053.0756,-158.0405 1059.0756,-164.0405 1059.0756,-170.0405 1059.0756,-170.0405 1059.0756,-182.0405 1059.0756,-182.0405 1059.0756,-188.0405 1053.0756,-194.0405 1047.0756,-194.0405"/>
+<text text-anchor="middle" x="951.0756" y="-172.3405" font-family="Menlo" font-size="14.00" fill="#000000">Parser</text>
+</a>
+</g>
+</g>
+<!-- First -->
+<g id="node2" class="node structure">
+<title>First</title>
+<g id="a_node2"><a xlink:href="/swift-parsing/First" xlink:title="First">
+<path fill="none" stroke="#000000" d="M1552.2507,-146.9071C1552.2507,-146.9071 1360.2507,-146.9071 1360.2507,-146.9071 1354.2507,-146.9071 1348.2507,-140.9071 1348.2507,-134.9071 1348.2507,-134.9071 1348.2507,-122.9071 1348.2507,-122.9071 1348.2507,-116.9071 1354.2507,-110.9071 1360.2507,-110.9071 1360.2507,-110.9071 1552.2507,-110.9071 1552.2507,-110.9071 1558.2507,-110.9071 1564.2507,-116.9071 1564.2507,-122.9071 1564.2507,-122.9071 1564.2507,-134.9071 1564.2507,-134.9071 1564.2507,-140.9071 1558.2507,-146.9071 1552.2507,-146.9071"/>
+<text text-anchor="middle" x="1456.2507" y="-125.2071" font-family="Menlo" font-size="14.00" fill="#000000">First</text>
+</a>
+</g>
+</g>
+<!-- First&#45;&gt;Parser -->
+<g id="edge19" class="edge conformsTo">
+<title>First&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1348.1879,-138.9894C1266.302,-146.6295 1153.8746,-157.1191 1069.5423,-164.9874"/>
+<polygon fill="#000000" stroke="#000000" points="1069.0327,-161.5196 1059.4011,-165.9336 1069.6831,-168.4894 1069.0327,-161.5196"/>
+</g>
+<!-- Rest -->
+<g id="node3" class="node structure">
+<title>Rest</title>
+<g id="a_node3"><a xlink:href="/swift-parsing/Rest" xlink:title="Rest">
+<path fill="none" stroke="#000000" d="M890.4134,-36C890.4134,-36 698.4134,-36 698.4134,-36 692.4134,-36 686.4134,-30 686.4134,-24 686.4134,-24 686.4134,-12 686.4134,-12 686.4134,-6 692.4134,0 698.4134,0 698.4134,0 890.4134,0 890.4134,0 896.4134,0 902.4134,-6 902.4134,-12 902.4134,-12 902.4134,-24 902.4134,-24 902.4134,-30 896.4134,-36 890.4134,-36"/>
+<text text-anchor="middle" x="794.4134" y="-14.3" font-family="Menlo" font-size="14.00" fill="#000000">Rest</text>
+</a>
+</g>
+</g>
+<!-- Rest&#45;&gt;Parser -->
+<g id="edge27" class="edge conformsTo">
+<title>Rest&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M812.3846,-36.1293C840.2125,-64.202 893.8291,-118.2903 925.6287,-150.3697"/>
+<polygon fill="#000000" stroke="#000000" points="923.3058,-152.9979 932.8315,-157.6358 928.2772,-148.0698 923.3058,-152.9979"/>
+</g>
+<!-- Parsers.UnicodeScalarViewToUTF8View -->
+<g id="node4" class="node structure">
+<title>Parsers.UnicodeScalarViewToUTF8View</title>
+<g id="a_node4"><a xlink:href="/swift-parsing/Parsers_UnicodeScalarViewToUTF8View" xlink:title="Parsers.UnicodeScalarViewToUTF8View">
+<path fill="none" stroke="#000000" d="M605.1328,-325.5204C605.1328,-325.5204 332.1328,-325.5204 332.1328,-325.5204 326.1328,-325.5204 320.1328,-319.5204 320.1328,-313.5204 320.1328,-313.5204 320.1328,-301.5204 320.1328,-301.5204 320.1328,-295.5204 326.1328,-289.5204 332.1328,-289.5204 332.1328,-289.5204 605.1328,-289.5204 605.1328,-289.5204 611.1328,-289.5204 617.1328,-295.5204 617.1328,-301.5204 617.1328,-301.5204 617.1328,-313.5204 617.1328,-313.5204 617.1328,-319.5204 611.1328,-325.5204 605.1328,-325.5204"/>
+<text text-anchor="middle" x="468.6328" y="-303.8204" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.UnicodeScalarViewToUTF8View</text>
+</a>
+</g>
+</g>
+<!-- Parsers.UnicodeScalarViewToUTF8View&#45;&gt;Parser -->
+<g id="edge46" class="edge conformsTo">
+<title>Parsers.UnicodeScalarViewToUTF8View&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M534.7028,-289.5144C623.5583,-265.2986 781.2066,-222.3348 874.9384,-196.7901"/>
+<polygon fill="#000000" stroke="#000000" points="875.9159,-200.1514 884.6437,-194.1451 874.0753,-193.3978 875.9159,-200.1514"/>
+</g>
+<!-- Parsers.Take10 -->
+<g id="node5" class="node structure">
+<title>Parsers.Take10</title>
+<g id="a_node5"><a xlink:href="/swift-parsing/Parsers_Take10" xlink:title="Parsers.Take10">
+<path fill="none" stroke="#000000" d="M1309.7049,-138.8544C1309.7049,-138.8544 1117.7049,-138.8544 1117.7049,-138.8544 1111.7049,-138.8544 1105.7049,-132.8544 1105.7049,-126.8544 1105.7049,-126.8544 1105.7049,-114.8544 1105.7049,-114.8544 1105.7049,-108.8544 1111.7049,-102.8544 1117.7049,-102.8544 1117.7049,-102.8544 1309.7049,-102.8544 1309.7049,-102.8544 1315.7049,-102.8544 1321.7049,-108.8544 1321.7049,-114.8544 1321.7049,-114.8544 1321.7049,-126.8544 1321.7049,-126.8544 1321.7049,-132.8544 1315.7049,-138.8544 1309.7049,-138.8544"/>
+<text text-anchor="middle" x="1213.7049" y="-117.1544" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take10</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take10&#45;&gt;Parser -->
+<g id="edge25" class="edge conformsTo">
+<title>Parsers.Take10&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1127.7103,-138.9244C1101.8434,-144.3598 1073.3023,-150.3571 1046.8435,-155.9168"/>
+<polygon fill="#000000" stroke="#000000" points="1045.8813,-152.5425 1036.8147,-158.0242 1047.3208,-159.3929 1045.8813,-152.5425"/>
+</g>
+<!-- Parsers.Take6 -->
+<g id="node6" class="node structure">
+<title>Parsers.Take6</title>
+<g id="a_node6"><a xlink:href="/swift-parsing/Parsers_Take6" xlink:title="Parsers.Take6">
+<path fill="none" stroke="#000000" d="M591.3649,-170.1284C591.3649,-170.1284 399.3649,-170.1284 399.3649,-170.1284 393.3649,-170.1284 387.3649,-164.1284 387.3649,-158.1284 387.3649,-158.1284 387.3649,-146.1284 387.3649,-146.1284 387.3649,-140.1284 393.3649,-134.1284 399.3649,-134.1284 399.3649,-134.1284 591.3649,-134.1284 591.3649,-134.1284 597.3649,-134.1284 603.3649,-140.1284 603.3649,-146.1284 603.3649,-146.1284 603.3649,-158.1284 603.3649,-158.1284 603.3649,-164.1284 597.3649,-170.1284 591.3649,-170.1284"/>
+<text text-anchor="middle" x="495.3649" y="-148.4284" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take6</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take6&#45;&gt;Parser -->
+<g id="edge14" class="edge conformsTo">
+<title>Parsers.Take6&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M603.6509,-157.8104C672.5212,-161.4241 761.7263,-166.1049 832.5003,-169.8186"/>
+<polygon fill="#000000" stroke="#000000" points="832.6344,-173.3303 842.8041,-170.3592 833.0012,-166.3399 832.6344,-173.3303"/>
+</g>
+<!-- Parsers.SubstringUUIDParser -->
+<g id="node7" class="node structure">
+<title>Parsers.SubstringUUIDParser</title>
+<g id="a_node7"><a xlink:href="/swift-parsing/Parsers_SubstringUUIDParser" xlink:title="Parsers.SubstringUUIDParser">
+<path fill="none" stroke="#000000" d="M442.0411,-86.5909C442.0411,-86.5909 243.0411,-86.5909 243.0411,-86.5909 237.0411,-86.5909 231.0411,-80.5909 231.0411,-74.5909 231.0411,-74.5909 231.0411,-62.5909 231.0411,-62.5909 231.0411,-56.5909 237.0411,-50.5909 243.0411,-50.5909 243.0411,-50.5909 442.0411,-50.5909 442.0411,-50.5909 448.0411,-50.5909 454.0411,-56.5909 454.0411,-62.5909 454.0411,-62.5909 454.0411,-74.5909 454.0411,-74.5909 454.0411,-80.5909 448.0411,-86.5909 442.0411,-86.5909"/>
+<text text-anchor="middle" x="342.5411" y="-64.8909" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringUUIDParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringUUIDParser&#45;&gt;Parser -->
+<g id="edge47" class="edge conformsTo">
+<title>Parsers.SubstringUUIDParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M444.7391,-86.6361C553.841,-105.9003 726.2047,-136.3348 838.9655,-156.2451"/>
+<polygon fill="#000000" stroke="#000000" points="838.5527,-159.7262 849.009,-158.0184 839.7699,-152.8329 838.5527,-159.7262"/>
+</g>
+<!-- Parsers.SubstringToUnicodeScalars -->
+<g id="node8" class="node structure">
+<title>Parsers.SubstringToUnicodeScalars</title>
+<g id="a_node8"><a xlink:href="/swift-parsing/Parsers_SubstringToUnicodeScalars" xlink:title="Parsers.SubstringToUnicodeScalars">
+<path fill="none" stroke="#000000" d="M1634.2951,-80.504C1634.2951,-80.504 1392.2951,-80.504 1392.2951,-80.504 1386.2951,-80.504 1380.2951,-74.504 1380.2951,-68.504 1380.2951,-68.504 1380.2951,-56.504 1380.2951,-56.504 1380.2951,-50.504 1386.2951,-44.504 1392.2951,-44.504 1392.2951,-44.504 1634.2951,-44.504 1634.2951,-44.504 1640.2951,-44.504 1646.2951,-50.504 1646.2951,-56.504 1646.2951,-56.504 1646.2951,-68.504 1646.2951,-68.504 1646.2951,-74.504 1640.2951,-80.504 1634.2951,-80.504"/>
+<text text-anchor="middle" x="1513.2951" y="-58.804" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringToUnicodeScalars</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringToUnicodeScalars&#45;&gt;Parser -->
+<g id="edge2" class="edge conformsTo">
+<title>Parsers.SubstringToUnicodeScalars&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1423.8991,-80.5569C1322.1505,-101.1044 1156.4009,-134.5764 1050.6142,-155.9393"/>
+<polygon fill="#000000" stroke="#000000" points="1049.6774,-152.5577 1040.5682,-157.968 1051.0631,-159.4192 1049.6774,-152.5577"/>
+</g>
+<!-- End -->
+<g id="node9" class="node structure">
+<title>End</title>
+<g id="a_node9"><a xlink:href="/swift-parsing/End" xlink:title="End">
+<path fill="none" stroke="#000000" d="M812.3866,-60.2519C812.3866,-60.2519 620.3866,-60.2519 620.3866,-60.2519 614.3866,-60.2519 608.3866,-54.2519 608.3866,-48.2519 608.3866,-48.2519 608.3866,-36.2519 608.3866,-36.2519 608.3866,-30.2519 614.3866,-24.2519 620.3866,-24.2519 620.3866,-24.2519 812.3866,-24.2519 812.3866,-24.2519 818.3866,-24.2519 824.3866,-30.2519 824.3866,-36.2519 824.3866,-36.2519 824.3866,-48.2519 824.3866,-48.2519 824.3866,-54.2519 818.3866,-60.2519 812.3866,-60.2519"/>
+<text text-anchor="middle" x="716.3866" y="-38.5519" font-family="Menlo" font-size="14.00" fill="#000000">End</text>
+</a>
+</g>
+</g>
+<!-- End&#45;&gt;Parser -->
+<g id="edge9" class="edge conformsTo">
+<title>End&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M748.0378,-60.2952C790.0303,-84.2338 864.2152,-126.5242 910.3428,-152.82"/>
+<polygon fill="#000000" stroke="#000000" points="908.7555,-155.9438 919.1764,-157.8557 912.2222,-149.8626 908.7555,-155.9438"/>
+</g>
+<!-- Parsers.SubstringDoubleParser -->
+<g id="node10" class="node structure">
+<title>Parsers.SubstringDoubleParser</title>
+<g id="a_node10"><a xlink:href="/swift-parsing/Parsers_SubstringDoubleParser" xlink:title="Parsers.SubstringDoubleParser">
+<path fill="none" stroke="#000000" d="M1326.5439,-47.5416C1326.5439,-47.5416 1113.5439,-47.5416 1113.5439,-47.5416 1107.5439,-47.5416 1101.5439,-41.5416 1101.5439,-35.5416 1101.5439,-35.5416 1101.5439,-23.5416 1101.5439,-23.5416 1101.5439,-17.5416 1107.5439,-11.5416 1113.5439,-11.5416 1113.5439,-11.5416 1326.5439,-11.5416 1326.5439,-11.5416 1332.5439,-11.5416 1338.5439,-17.5416 1338.5439,-23.5416 1338.5439,-23.5416 1338.5439,-35.5416 1338.5439,-35.5416 1338.5439,-41.5416 1332.5439,-47.5416 1326.5439,-47.5416"/>
+<text text-anchor="middle" x="1220.0439" y="-25.8416" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringDoubleParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringDoubleParser&#45;&gt;Parser -->
+<g id="edge42" class="edge conformsTo">
+<title>Parsers.SubstringDoubleParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1186.7934,-47.6522C1137.8988,-74.2836 1046.6289,-123.9955 993.1388,-153.1299"/>
+<polygon fill="#000000" stroke="#000000" points="991.358,-150.1144 984.2502,-157.9713 994.7062,-156.2617 991.358,-150.1144"/>
+</g>
+<!-- Parsers.DoubleParser -->
+<g id="node11" class="node structure">
+<title>Parsers.DoubleParser</title>
+<g id="a_node11"><a xlink:href="/swift-parsing/Parsers_DoubleParser" xlink:title="Parsers.DoubleParser">
+<path fill="none" stroke="#000000" d="M1008.1602,-63.8703C1008.1602,-63.8703 816.1602,-63.8703 816.1602,-63.8703 810.1602,-63.8703 804.1602,-57.8703 804.1602,-51.8703 804.1602,-51.8703 804.1602,-39.8703 804.1602,-39.8703 804.1602,-33.8703 810.1602,-27.8703 816.1602,-27.8703 816.1602,-27.8703 1008.1602,-27.8703 1008.1602,-27.8703 1014.1602,-27.8703 1020.1602,-33.8703 1020.1602,-39.8703 1020.1602,-39.8703 1020.1602,-51.8703 1020.1602,-51.8703 1020.1602,-57.8703 1014.1602,-63.8703 1008.1602,-63.8703"/>
+<text text-anchor="middle" x="912.1602" y="-42.1703" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.DoubleParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.DoubleParser&#45;&gt;Parser -->
+<g id="edge24" class="edge conformsTo">
+<title>Parsers.DoubleParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M917.5712,-63.9699C924.0691,-85.705 935.0421,-122.4091 942.6518,-147.8632"/>
+<polygon fill="#000000" stroke="#000000" points="939.3674,-149.0965 945.5851,-157.675 946.0741,-147.0914 939.3674,-149.0965"/>
+</g>
+<!-- Parsers.SubstringBoolParser -->
+<g id="node12" class="node structure">
+<title>Parsers.SubstringBoolParser</title>
+<g id="a_node12"><a xlink:href="/swift-parsing/Parsers_SubstringBoolParser" xlink:title="Parsers.SubstringBoolParser">
+<path fill="none" stroke="#000000" d="M206,-192.9044C206,-192.9044 12,-192.9044 12,-192.9044 6,-192.9044 0,-186.9044 0,-180.9044 0,-180.9044 0,-168.9044 0,-168.9044 0,-162.9044 6,-156.9044 12,-156.9044 12,-156.9044 206,-156.9044 206,-156.9044 212,-156.9044 218,-162.9044 218,-168.9044 218,-168.9044 218,-180.9044 218,-180.9044 218,-186.9044 212,-192.9044 206,-192.9044"/>
+<text text-anchor="middle" x="109" y="-171.2044" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringBoolParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringBoolParser&#45;&gt;Parser -->
+<g id="edge12" class="edge conformsTo">
+<title>Parsers.SubstringBoolParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M218.2234,-175.0518C376.7761,-175.2657 669.544,-175.6607 832.9531,-175.8811"/>
+<polygon fill="#000000" stroke="#000000" points="833.0398,-179.3811 843.0446,-175.8947 833.0493,-172.3811 833.0398,-179.3811"/>
+</g>
+<!-- Parsers.Filter -->
+<g id="node13" class="node structure">
+<title>Parsers.Filter</title>
+<g id="a_node13"><a xlink:href="/swift-parsing/Parsers_Filter" xlink:title="Parsers.Filter">
+<path fill="none" stroke="#000000" d="M1853.9677,-154.3366C1853.9677,-154.3366 1661.9677,-154.3366 1661.9677,-154.3366 1655.9677,-154.3366 1649.9677,-148.3366 1649.9677,-142.3366 1649.9677,-142.3366 1649.9677,-130.3366 1649.9677,-130.3366 1649.9677,-124.3366 1655.9677,-118.3366 1661.9677,-118.3366 1661.9677,-118.3366 1853.9677,-118.3366 1853.9677,-118.3366 1859.9677,-118.3366 1865.9677,-124.3366 1865.9677,-130.3366 1865.9677,-130.3366 1865.9677,-142.3366 1865.9677,-142.3366 1865.9677,-148.3366 1859.9677,-154.3366 1853.9677,-154.3366"/>
+<text text-anchor="middle" x="1757.9677" y="-132.6366" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Filter</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Filter&#45;&gt;Parser -->
+<g id="edge45" class="edge conformsTo">
+<title>Parsers.Filter&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1649.5656,-141.6707C1498.4761,-149.1051 1225.5904,-162.5327 1069.3791,-170.2192"/>
+<polygon fill="#000000" stroke="#000000" points="1069.0768,-166.7298 1059.261,-170.7171 1069.4209,-173.7213 1069.0768,-166.7298"/>
+</g>
+<!-- Parsers.Take3 -->
+<g id="node14" class="node structure">
+<title>Parsers.Take3</title>
+<g id="a_node14"><a xlink:href="/swift-parsing/Parsers_Take3" xlink:title="Parsers.Take3">
+<path fill="none" stroke="#000000" d="M1607.3279,-224.9775C1607.3279,-224.9775 1415.3279,-224.9775 1415.3279,-224.9775 1409.3279,-224.9775 1403.3279,-218.9775 1403.3279,-212.9775 1403.3279,-212.9775 1403.3279,-200.9775 1403.3279,-200.9775 1403.3279,-194.9775 1409.3279,-188.9775 1415.3279,-188.9775 1415.3279,-188.9775 1607.3279,-188.9775 1607.3279,-188.9775 1613.3279,-188.9775 1619.3279,-194.9775 1619.3279,-200.9775 1619.3279,-200.9775 1619.3279,-212.9775 1619.3279,-212.9775 1619.3279,-218.9775 1613.3279,-224.9775 1607.3279,-224.9775"/>
+<text text-anchor="middle" x="1511.3279" y="-203.2775" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take3</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take3&#45;&gt;Parser -->
+<g id="edge13" class="edge conformsTo">
+<title>Parsers.Take3&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1403.3056,-201.0125C1307.5454,-195.7247 1167.9761,-188.0177 1069.2653,-182.5669"/>
+<polygon fill="#000000" stroke="#000000" points="1069.4209,-179.0702 1059.2431,-182.0135 1069.0349,-186.0596 1069.4209,-179.0702"/>
+</g>
+<!-- OneOfMany -->
+<g id="node15" class="node structure">
+<title>OneOfMany</title>
+<g id="a_node15"><a xlink:href="/swift-parsing/OneOfMany" xlink:title="OneOfMany">
+<path fill="none" stroke="#000000" d="M964.9908,-314.5755C964.9908,-314.5755 772.9908,-314.5755 772.9908,-314.5755 766.9908,-314.5755 760.9908,-308.5755 760.9908,-302.5755 760.9908,-302.5755 760.9908,-290.5755 760.9908,-290.5755 760.9908,-284.5755 766.9908,-278.5755 772.9908,-278.5755 772.9908,-278.5755 964.9908,-278.5755 964.9908,-278.5755 970.9908,-278.5755 976.9908,-284.5755 976.9908,-290.5755 976.9908,-290.5755 976.9908,-302.5755 976.9908,-302.5755 976.9908,-308.5755 970.9908,-314.5755 964.9908,-314.5755"/>
+<text text-anchor="middle" x="868.9908" y="-292.8755" font-family="Menlo" font-size="14.00" fill="#000000">OneOfMany</text>
+</a>
+</g>
+</g>
+<!-- OneOfMany&#45;&gt;Parser -->
+<g id="edge21" class="edge conformsTo">
+<title>OneOfMany&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M881.2797,-278.5302C895.0014,-258.381 917.3401,-225.5783 933.0417,-202.5219"/>
+<polygon fill="#000000" stroke="#000000" points="935.9668,-204.4446 938.7027,-194.2091 930.181,-200.5045 935.9668,-204.4446"/>
+</g>
+<!-- Parsers.FloatParser -->
+<g id="node16" class="node structure">
+<title>Parsers.FloatParser</title>
+<g id="a_node16"><a xlink:href="/swift-parsing/Parsers_FloatParser" xlink:title="Parsers.FloatParser">
+<path fill="none" stroke="#000000" d="M1204.7455,-78.4694C1204.7455,-78.4694 1012.7455,-78.4694 1012.7455,-78.4694 1006.7455,-78.4694 1000.7455,-72.4694 1000.7455,-66.4694 1000.7455,-66.4694 1000.7455,-54.4694 1000.7455,-54.4694 1000.7455,-48.4694 1006.7455,-42.4694 1012.7455,-42.4694 1012.7455,-42.4694 1204.7455,-42.4694 1204.7455,-42.4694 1210.7455,-42.4694 1216.7455,-48.4694 1216.7455,-54.4694 1216.7455,-54.4694 1216.7455,-66.4694 1216.7455,-66.4694 1216.7455,-72.4694 1210.7455,-78.4694 1204.7455,-78.4694"/>
+<text text-anchor="middle" x="1108.7455" y="-56.7694" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.FloatParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.FloatParser&#45;&gt;Parser -->
+<g id="edge8" class="edge conformsTo">
+<title>Parsers.FloatParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1084.1096,-78.5274C1057.2288,-98.2308 1014.0535,-129.8781 984.2159,-151.7489"/>
+<polygon fill="#000000" stroke="#000000" points="981.7944,-149.1842 975.7982,-157.919 985.9328,-154.8299 981.7944,-149.1842"/>
+</g>
+<!-- Skip -->
+<g id="node17" class="node structure">
+<title>Skip</title>
+<g id="a_node17"><a xlink:href="/swift-parsing/Skip" xlink:title="Skip">
+<path fill="none" stroke="#000000" d="M1469.2018,-59.6318C1469.2018,-59.6318 1277.2018,-59.6318 1277.2018,-59.6318 1271.2018,-59.6318 1265.2018,-53.6318 1265.2018,-47.6318 1265.2018,-47.6318 1265.2018,-35.6318 1265.2018,-35.6318 1265.2018,-29.6318 1271.2018,-23.6318 1277.2018,-23.6318 1277.2018,-23.6318 1469.2018,-23.6318 1469.2018,-23.6318 1475.2018,-23.6318 1481.2018,-29.6318 1481.2018,-35.6318 1481.2018,-35.6318 1481.2018,-47.6318 1481.2018,-47.6318 1481.2018,-53.6318 1475.2018,-59.6318 1469.2018,-59.6318"/>
+<text text-anchor="middle" x="1373.2018" y="-37.9318" font-family="Menlo" font-size="14.00" fill="#000000">Skip</text>
+</a>
+</g>
+</g>
+<!-- Skip&#45;&gt;Parser -->
+<g id="edge31" class="edge conformsTo">
+<title>Skip&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1316.272,-59.7587C1238.6372,-84.4784 1099.8275,-128.6766 1017.5249,-154.8824"/>
+<polygon fill="#000000" stroke="#000000" points="1016.2427,-151.6175 1007.776,-157.9866 1018.3666,-158.2875 1016.2427,-151.6175"/>
+</g>
+<!-- Fail -->
+<g id="node18" class="node structure">
+<title>Fail</title>
+<g id="a_node18"><a xlink:href="/swift-parsing/Fail" xlink:title="Fail">
+<path fill="none" stroke="#000000" d="M350.2921,-281.9715C350.2921,-281.9715 158.2921,-281.9715 158.2921,-281.9715 152.2921,-281.9715 146.2921,-275.9715 146.2921,-269.9715 146.2921,-269.9715 146.2921,-257.9715 146.2921,-257.9715 146.2921,-251.9715 152.2921,-245.9715 158.2921,-245.9715 158.2921,-245.9715 350.2921,-245.9715 350.2921,-245.9715 356.2921,-245.9715 362.2921,-251.9715 362.2921,-257.9715 362.2921,-257.9715 362.2921,-269.9715 362.2921,-269.9715 362.2921,-275.9715 356.2921,-281.9715 350.2921,-281.9715"/>
+<text text-anchor="middle" x="254.2921" y="-260.2715" font-family="Menlo" font-size="14.00" fill="#000000">Fail</text>
+</a>
+</g>
+</g>
+<!-- Fail&#45;&gt;Parser -->
+<g id="edge18" class="edge conformsTo">
+<title>Fail&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M362.4,-250.3288C489.9043,-234.2383 701.1273,-207.5829 832.8692,-190.9576"/>
+<polygon fill="#000000" stroke="#000000" points="833.5178,-194.4036 843.0009,-189.679 832.6413,-187.4587 833.5178,-194.4036"/>
+</g>
+<!-- Parsers.SubstringIntParser -->
+<g id="node19" class="node structure">
+<title>Parsers.SubstringIntParser</title>
+<g id="a_node19"><a xlink:href="/swift-parsing/Parsers_SubstringIntParser" xlink:title="Parsers.SubstringIntParser">
+<path fill="none" stroke="#000000" d="M271.22,-249.522C271.22,-249.522 79.22,-249.522 79.22,-249.522 73.22,-249.522 67.22,-243.522 67.22,-237.522 67.22,-237.522 67.22,-225.522 67.22,-225.522 67.22,-219.522 73.22,-213.522 79.22,-213.522 79.22,-213.522 271.22,-213.522 271.22,-213.522 277.22,-213.522 283.22,-219.522 283.22,-225.522 283.22,-225.522 283.22,-237.522 283.22,-237.522 283.22,-243.522 277.22,-249.522 271.22,-249.522"/>
+<text text-anchor="middle" x="175.22" y="-227.822" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringIntParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringIntParser&#45;&gt;Parser -->
+<g id="edge54" class="edge conformsTo">
+<title>Parsers.SubstringIntParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M283.5076,-223.7784C428.117,-213.4373 683.3746,-195.1838 832.8561,-184.4944"/>
+<polygon fill="#000000" stroke="#000000" points="833.265,-187.9742 842.9898,-183.7697 832.7656,-180.992 833.265,-187.9742"/>
+</g>
+<!-- Parsers.Take8 -->
+<g id="node20" class="node structure">
+<title>Parsers.Take8</title>
+<g id="a_node20"><a xlink:href="/swift-parsing/Parsers_Take8" xlink:title="Parsers.Take8">
+<path fill="none" stroke="#000000" d="M508.6178,-253.1691C508.6178,-253.1691 316.6178,-253.1691 316.6178,-253.1691 310.6178,-253.1691 304.6178,-247.1691 304.6178,-241.1691 304.6178,-241.1691 304.6178,-229.1691 304.6178,-229.1691 304.6178,-223.1691 310.6178,-217.1691 316.6178,-217.1691 316.6178,-217.1691 508.6178,-217.1691 508.6178,-217.1691 514.6178,-217.1691 520.6178,-223.1691 520.6178,-229.1691 520.6178,-229.1691 520.6178,-241.1691 520.6178,-241.1691 520.6178,-247.1691 514.6178,-253.1691 508.6178,-253.1691"/>
+<text text-anchor="middle" x="412.6178" y="-231.4691" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take8</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take8&#45;&gt;Parser -->
+<g id="edge43" class="edge conformsTo">
+<title>Parsers.Take8&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M520.935,-223.2747C611.3095,-213.3506 739.8934,-199.2306 832.909,-189.0165"/>
+<polygon fill="#000000" stroke="#000000" points="833.3733,-192.4866 842.9315,-187.9159 832.6092,-185.5285 833.3733,-192.4866"/>
+</g>
+<!-- PrefixUpTo -->
+<g id="node21" class="node structure">
+<title>PrefixUpTo</title>
+<g id="a_node21"><a xlink:href="/swift-parsing/PrefixUpTo" xlink:title="PrefixUpTo">
+<path fill="none" stroke="#000000" d="M774.5999,-130.7809C774.5999,-130.7809 582.5999,-130.7809 582.5999,-130.7809 576.5999,-130.7809 570.5999,-124.7809 570.5999,-118.7809 570.5999,-118.7809 570.5999,-106.7809 570.5999,-106.7809 570.5999,-100.7809 576.5999,-94.7809 582.5999,-94.7809 582.5999,-94.7809 774.5999,-94.7809 774.5999,-94.7809 780.5999,-94.7809 786.5999,-100.7809 786.5999,-106.7809 786.5999,-106.7809 786.5999,-118.7809 786.5999,-118.7809 786.5999,-124.7809 780.5999,-130.7809 774.5999,-130.7809"/>
+<text text-anchor="middle" x="678.5999" y="-109.0809" font-family="Menlo" font-size="14.00" fill="#000000">PrefixUpTo</text>
+</a>
+</g>
+</g>
+<!-- PrefixUpTo&#45;&gt;Parser -->
+<g id="edge40" class="edge conformsTo">
+<title>PrefixUpTo&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M756.3159,-130.8239C789.6734,-138.5684 828.8101,-147.6546 863.216,-155.6425"/>
+<polygon fill="#000000" stroke="#000000" points="862.724,-159.1213 873.2564,-157.9735 864.3071,-152.3026 862.724,-159.1213"/>
+</g>
+<!-- Parsers.FlatMap -->
+<g id="node22" class="node structure">
+<title>Parsers.FlatMap</title>
+<g id="a_node22"><a xlink:href="/swift-parsing/Parsers_FlatMap" xlink:title="Parsers.FlatMap">
+<path fill="none" stroke="#000000" d="M535.8806,-115.5292C535.8806,-115.5292 343.8806,-115.5292 343.8806,-115.5292 337.8806,-115.5292 331.8806,-109.5292 331.8806,-103.5292 331.8806,-103.5292 331.8806,-91.5292 331.8806,-91.5292 331.8806,-85.5292 337.8806,-79.5292 343.8806,-79.5292 343.8806,-79.5292 535.8806,-79.5292 535.8806,-79.5292 541.8806,-79.5292 547.8806,-85.5292 547.8806,-91.5292 547.8806,-91.5292 547.8806,-103.5292 547.8806,-103.5292 547.8806,-109.5292 541.8806,-115.5292 535.8806,-115.5292"/>
+<text text-anchor="middle" x="439.8806" y="-93.8292" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.FlatMap</text>
+</a>
+</g>
+</g>
+<!-- Parsers.FlatMap&#45;&gt;Parser -->
+<g id="edge6" class="edge conformsTo">
+<title>Parsers.FlatMap&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M547.9795,-114.1314C631.4055,-126.9443 746.7033,-144.6522 832.6248,-157.8483"/>
+<polygon fill="#000000" stroke="#000000" points="832.2733,-161.3353 842.6887,-159.394 833.336,-154.4164 832.2733,-161.3353"/>
+</g>
+<!-- Parsers.Stream -->
+<g id="node23" class="node structure">
+<title>Parsers.Stream</title>
+<g id="a_node23"><a xlink:href="/swift-parsing/Parsers_Stream" xlink:title="Parsers.Stream">
+<path fill="none" stroke="#000000" d="M1330.4215,-285.1063C1330.4215,-285.1063 1138.4215,-285.1063 1138.4215,-285.1063 1132.4215,-285.1063 1126.4215,-279.1063 1126.4215,-273.1063 1126.4215,-273.1063 1126.4215,-261.1063 1126.4215,-261.1063 1126.4215,-255.1063 1132.4215,-249.1063 1138.4215,-249.1063 1138.4215,-249.1063 1330.4215,-249.1063 1330.4215,-249.1063 1336.4215,-249.1063 1342.4215,-255.1063 1342.4215,-261.1063 1342.4215,-261.1063 1342.4215,-273.1063 1342.4215,-273.1063 1342.4215,-279.1063 1336.4215,-285.1063 1330.4215,-285.1063"/>
+<text text-anchor="middle" x="1234.4215" y="-263.4063" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Stream</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Stream&#45;&gt;Parser -->
+<g id="edge50" class="edge conformsTo">
+<title>Parsers.Stream&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1178.1027,-249.0057C1131.6523,-234.0769 1065.6853,-212.8754 1016.8217,-197.1709"/>
+<polygon fill="#000000" stroke="#000000" points="1017.8792,-193.8345 1007.2878,-194.1068 1015.7373,-200.4988 1017.8792,-193.8345"/>
+</g>
+<!-- Parsers.Take4 -->
+<g id="node24" class="node structure">
+<title>Parsers.Take4</title>
+<g id="a_node24"><a xlink:href="/swift-parsing/Parsers_Take4" xlink:title="Parsers.Take4">
+<path fill="none" stroke="#000000" d="M1535.386,-321.5695C1535.386,-321.5695 1343.386,-321.5695 1343.386,-321.5695 1337.386,-321.5695 1331.386,-315.5695 1331.386,-309.5695 1331.386,-309.5695 1331.386,-297.5695 1331.386,-297.5695 1331.386,-291.5695 1337.386,-285.5695 1343.386,-285.5695 1343.386,-285.5695 1535.386,-285.5695 1535.386,-285.5695 1541.386,-285.5695 1547.386,-291.5695 1547.386,-297.5695 1547.386,-297.5695 1547.386,-309.5695 1547.386,-309.5695 1547.386,-315.5695 1541.386,-321.5695 1535.386,-321.5695"/>
+<text text-anchor="middle" x="1439.386" y="-299.8695" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take4</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take4&#45;&gt;Parser -->
+<g id="edge26" class="edge conformsTo">
+<title>Parsers.Take4&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1370.4587,-285.5682C1280.7012,-262.1268 1124.1655,-221.2453 1029.823,-196.6064"/>
+<polygon fill="#000000" stroke="#000000" points="1030.6062,-193.1936 1020.0463,-194.0531 1028.8373,-199.9665 1030.6062,-193.1936"/>
+</g>
+<!-- Parsers.Pipe -->
+<g id="node25" class="node structure">
+<title>Parsers.Pipe</title>
+<g id="a_node25"><a xlink:href="/swift-parsing/Parsers_Pipe" xlink:title="Parsers.Pipe">
+<path fill="none" stroke="#000000" d="M815.7235,-345.0131C815.7235,-345.0131 623.7235,-345.0131 623.7235,-345.0131 617.7235,-345.0131 611.7235,-339.0131 611.7235,-333.0131 611.7235,-333.0131 611.7235,-321.0131 611.7235,-321.0131 611.7235,-315.0131 617.7235,-309.0131 623.7235,-309.0131 623.7235,-309.0131 815.7235,-309.0131 815.7235,-309.0131 821.7235,-309.0131 827.7235,-315.0131 827.7235,-321.0131 827.7235,-321.0131 827.7235,-333.0131 827.7235,-333.0131 827.7235,-339.0131 821.7235,-345.0131 815.7235,-345.0131"/>
+<text text-anchor="middle" x="719.7235" y="-323.3131" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Pipe</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Pipe&#45;&gt;Parser -->
+<g id="edge33" class="edge conformsTo">
+<title>Parsers.Pipe&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M747.63,-308.8023C789.5175,-281.4679 868.6535,-229.8264 914.9143,-199.6381"/>
+<polygon fill="#000000" stroke="#000000" points="916.9685,-202.477 923.4303,-194.0809 913.1429,-196.6148 916.9685,-202.477"/>
+</g>
+<!-- Parsers.Float80Parser -->
+<g id="node26" class="node structure">
+<title>Parsers.Float80Parser</title>
+<g id="a_node26"><a xlink:href="/swift-parsing/Parsers_Float80Parser" xlink:title="Parsers.Float80Parser">
+<path fill="none" stroke="#000000" d="M1133.5275,-36.8704C1133.5275,-36.8704 941.5275,-36.8704 941.5275,-36.8704 935.5275,-36.8704 929.5275,-30.8704 929.5275,-24.8704 929.5275,-24.8704 929.5275,-12.8704 929.5275,-12.8704 929.5275,-6.8704 935.5275,-.8704 941.5275,-.8704 941.5275,-.8704 1133.5275,-.8704 1133.5275,-.8704 1139.5275,-.8704 1145.5275,-6.8704 1145.5275,-12.8704 1145.5275,-12.8704 1145.5275,-24.8704 1145.5275,-24.8704 1145.5275,-30.8704 1139.5275,-36.8704 1133.5275,-36.8704"/>
+<text text-anchor="middle" x="1037.5275" y="-15.1704" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Float80Parser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Float80Parser&#45;&gt;Parser -->
+<g id="edge52" class="edge conformsTo">
+<title>Parsers.Float80Parser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1027.6104,-36.8998C1012.5131,-64.3467 983.661,-116.8 966.0169,-148.8772"/>
+<polygon fill="#000000" stroke="#000000" points="962.8963,-147.2884 961.1434,-157.7372 969.0297,-150.6621 962.8963,-147.2884"/>
+</g>
+<!-- Lazy -->
+<g id="node27" class="node class">
+<title>Lazy</title>
+<g id="a_node27"><a xlink:href="/swift-parsing/Lazy" xlink:title="Lazy">
+<path fill="none" stroke="#000000" stroke-width="2" d="M1659.0421,-300.4689C1659.0421,-300.4689 1467.0421,-300.4689 1467.0421,-300.4689 1461.0421,-300.4689 1455.0421,-294.4689 1455.0421,-288.4689 1455.0421,-288.4689 1455.0421,-276.4689 1455.0421,-276.4689 1455.0421,-270.4689 1461.0421,-264.4689 1467.0421,-264.4689 1467.0421,-264.4689 1659.0421,-264.4689 1659.0421,-264.4689 1665.0421,-264.4689 1671.0421,-270.4689 1671.0421,-276.4689 1671.0421,-276.4689 1671.0421,-288.4689 1671.0421,-288.4689 1671.0421,-294.4689 1665.0421,-300.4689 1659.0421,-300.4689"/>
+<text text-anchor="middle" x="1563.0421" y="-278.7689" font-family="Menlo" font-size="14.00" fill="#000000">Lazy</text>
+</a>
+</g>
+</g>
+<!-- Lazy&#45;&gt;Parser -->
+<g id="edge36" class="edge conformsTo">
+<title>Lazy&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1459.2303,-264.4147C1349.7459,-245.3741 1177.7551,-215.4628 1064.701,-195.8013"/>
+<polygon fill="#000000" stroke="#000000" points="1065.0809,-192.3149 1054.6291,-194.0497 1063.8815,-199.2114 1065.0809,-192.3149"/>
+</g>
+<!-- Parsers.CompactMap -->
+<g id="node28" class="node structure">
+<title>Parsers.CompactMap</title>
+<g id="a_node28"><a xlink:href="/swift-parsing/Parsers_CompactMap" xlink:title="Parsers.CompactMap">
+<path fill="none" stroke="#000000" d="M757.8976,-212.7068C757.8976,-212.7068 565.8976,-212.7068 565.8976,-212.7068 559.8976,-212.7068 553.8976,-206.7068 553.8976,-200.7068 553.8976,-200.7068 553.8976,-188.7068 553.8976,-188.7068 553.8976,-182.7068 559.8976,-176.7068 565.8976,-176.7068 565.8976,-176.7068 757.8976,-176.7068 757.8976,-176.7068 763.8976,-176.7068 769.8976,-182.7068 769.8976,-188.7068 769.8976,-188.7068 769.8976,-200.7068 769.8976,-200.7068 769.8976,-206.7068 763.8976,-212.7068 757.8976,-212.7068"/>
+<text text-anchor="middle" x="661.8976" y="-191.0068" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.CompactMap</text>
+</a>
+</g>
+</g>
+<!-- Parsers.CompactMap&#45;&gt;Parser -->
+<g id="edge7" class="edge conformsTo">
+<title>Parsers.CompactMap&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M769.9881,-187.7296C790.3919,-186.4125 811.8334,-185.0285 832.5378,-183.692"/>
+<polygon fill="#000000" stroke="#000000" points="832.881,-187.1773 842.6348,-183.0403 832.4301,-180.1918 832.881,-187.1773"/>
+</g>
+<!-- PrefixThrough -->
+<g id="node29" class="node structure">
+<title>PrefixThrough</title>
+<g id="a_node29"><a xlink:href="/swift-parsing/PrefixThrough" xlink:title="PrefixThrough">
+<path fill="none" stroke="#000000" d="M702.2131,-81.6834C702.2131,-81.6834 510.2131,-81.6834 510.2131,-81.6834 504.2131,-81.6834 498.2131,-75.6834 498.2131,-69.6834 498.2131,-69.6834 498.2131,-57.6834 498.2131,-57.6834 498.2131,-51.6834 504.2131,-45.6834 510.2131,-45.6834 510.2131,-45.6834 702.2131,-45.6834 702.2131,-45.6834 708.2131,-45.6834 714.2131,-51.6834 714.2131,-57.6834 714.2131,-57.6834 714.2131,-69.6834 714.2131,-69.6834 714.2131,-75.6834 708.2131,-81.6834 702.2131,-81.6834"/>
+<text text-anchor="middle" x="606.2131" y="-59.9834" font-family="Menlo" font-size="14.00" fill="#000000">PrefixThrough</text>
+</a>
+</g>
+</g>
+<!-- PrefixThrough&#45;&gt;Parser -->
+<g id="edge1" class="edge conformsTo">
+<title>PrefixThrough&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M661.6212,-81.7355C722.834,-101.6788 821.3009,-133.7595 886.1012,-154.8717"/>
+<polygon fill="#000000" stroke="#000000" points="885.2127,-158.2632 895.805,-158.0332 887.3811,-151.6075 885.2127,-158.2632"/>
+</g>
+<!-- Parsers.Take7 -->
+<g id="node30" class="node structure">
+<title>Parsers.Take7</title>
+<g id="a_node30"><a xlink:href="/swift-parsing/Parsers_Take7" xlink:title="Parsers.Take7">
+<path fill="none" stroke="#000000" d="M1726.8053,-103.4956C1726.8053,-103.4956 1534.8053,-103.4956 1534.8053,-103.4956 1528.8053,-103.4956 1522.8053,-97.4956 1522.8053,-91.4956 1522.8053,-91.4956 1522.8053,-79.4956 1522.8053,-79.4956 1522.8053,-73.4956 1528.8053,-67.4956 1534.8053,-67.4956 1534.8053,-67.4956 1726.8053,-67.4956 1726.8053,-67.4956 1732.8053,-67.4956 1738.8053,-73.4956 1738.8053,-79.4956 1738.8053,-79.4956 1738.8053,-91.4956 1738.8053,-91.4956 1738.8053,-97.4956 1732.8053,-103.4956 1726.8053,-103.4956"/>
+<text text-anchor="middle" x="1630.8053" y="-81.7956" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take7</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take7&#45;&gt;Parser -->
+<g id="edge38" class="edge conformsTo">
+<title>Parsers.Take7&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1522.7246,-99.8928C1399.0894,-116.3619 1197.2941,-143.2424 1069.4905,-160.2668"/>
+<polygon fill="#000000" stroke="#000000" points="1068.7234,-156.8379 1059.2731,-161.6278 1069.6477,-163.7767 1068.7234,-156.8379"/>
+</g>
+<!-- Parsers.Take2 -->
+<g id="node31" class="node structure">
+<title>Parsers.Take2</title>
+<g id="a_node31"><a xlink:href="/swift-parsing/Parsers_Take2" xlink:title="Parsers.Take2">
+<path fill="none" stroke="#000000" d="M1045.8189,-279.9295C1045.8189,-279.9295 853.8189,-279.9295 853.8189,-279.9295 847.8189,-279.9295 841.8189,-273.9295 841.8189,-267.9295 841.8189,-267.9295 841.8189,-255.9295 841.8189,-255.9295 841.8189,-249.9295 847.8189,-243.9295 853.8189,-243.9295 853.8189,-243.9295 1045.8189,-243.9295 1045.8189,-243.9295 1051.8189,-243.9295 1057.8189,-249.9295 1057.8189,-255.9295 1057.8189,-255.9295 1057.8189,-267.9295 1057.8189,-267.9295 1057.8189,-273.9295 1051.8189,-279.9295 1045.8189,-279.9295"/>
+<text text-anchor="middle" x="949.8189" y="-258.2295" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take2</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take2&#45;&gt;Parser -->
+<g id="edge17" class="edge conformsTo">
+<title>Parsers.Take2&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M950.0854,-243.7147C950.252,-232.3274 950.4701,-217.4212 950.6592,-204.4977"/>
+<polygon fill="#000000" stroke="#000000" points="954.1627,-204.2792 950.8095,-194.2291 947.1635,-204.1768 954.1627,-204.2792"/>
+</g>
+<!-- Parsers.Take9 -->
+<g id="node32" class="node structure">
+<title>Parsers.Take9</title>
+<g id="a_node32"><a xlink:href="/swift-parsing/Parsers_Take9" xlink:title="Parsers.Take9">
+<path fill="none" stroke="#000000" d="M1357.8185,-191.4019C1357.8185,-191.4019 1165.8185,-191.4019 1165.8185,-191.4019 1159.8185,-191.4019 1153.8185,-185.4019 1153.8185,-179.4019 1153.8185,-179.4019 1153.8185,-167.4019 1153.8185,-167.4019 1153.8185,-161.4019 1159.8185,-155.4019 1165.8185,-155.4019 1165.8185,-155.4019 1357.8185,-155.4019 1357.8185,-155.4019 1363.8185,-155.4019 1369.8185,-161.4019 1369.8185,-167.4019 1369.8185,-167.4019 1369.8185,-179.4019 1369.8185,-179.4019 1369.8185,-185.4019 1363.8185,-191.4019 1357.8185,-191.4019"/>
+<text text-anchor="middle" x="1261.8185" y="-169.7019" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take9</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take9&#45;&gt;Parser -->
+<g id="edge49" class="edge conformsTo">
+<title>Parsers.Take9&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1153.572,-174.321C1126.3502,-174.5522 1096.9967,-174.8014 1069.3138,-175.0365"/>
+<polygon fill="#000000" stroke="#000000" points="1069.1673,-171.5375 1059.1974,-175.1224 1069.2268,-178.5372 1069.1673,-171.5375"/>
+</g>
+<!-- Parsers.OptionalParser -->
+<g id="node33" class="node structure">
+<title>Parsers.OptionalParser</title>
+<g id="a_node33"><a xlink:href="/swift-parsing/Parsers_OptionalParser" xlink:title="Parsers.OptionalParser">
+<path fill="none" stroke="#000000" d="M582.4012,-62.0805C582.4012,-62.0805 390.4012,-62.0805 390.4012,-62.0805 384.4012,-62.0805 378.4012,-56.0805 378.4012,-50.0805 378.4012,-50.0805 378.4012,-38.0805 378.4012,-38.0805 378.4012,-32.0805 384.4012,-26.0805 390.4012,-26.0805 390.4012,-26.0805 582.4012,-26.0805 582.4012,-26.0805 588.4012,-26.0805 594.4012,-32.0805 594.4012,-38.0805 594.4012,-38.0805 594.4012,-50.0805 594.4012,-50.0805 594.4012,-56.0805 588.4012,-62.0805 582.4012,-62.0805"/>
+<text text-anchor="middle" x="486.4012" y="-40.3805" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.OptionalParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.OptionalParser&#45;&gt;Parser -->
+<g id="edge29" class="edge conformsTo">
+<title>Parsers.OptionalParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M550.0379,-62.1522C635.5675,-86.4413 787.2738,-129.5234 877.5739,-155.1672"/>
+<polygon fill="#000000" stroke="#000000" points="876.8878,-158.6107 887.4636,-157.9757 878.8002,-151.8769 876.8878,-158.6107"/>
+</g>
+<!-- Parsers.Take5 -->
+<g id="node34" class="node structure">
+<title>Parsers.Take5</title>
+<g id="a_node34"><a xlink:href="/swift-parsing/Parsers_Take5" xlink:title="Parsers.Take5">
+<path fill="none" stroke="#000000" d="M702.666,-276.3719C702.666,-276.3719 510.666,-276.3719 510.666,-276.3719 504.666,-276.3719 498.666,-270.3719 498.666,-264.3719 498.666,-264.3719 498.666,-252.3719 498.666,-252.3719 498.666,-246.3719 504.666,-240.3719 510.666,-240.3719 510.666,-240.3719 702.666,-240.3719 702.666,-240.3719 708.666,-240.3719 714.666,-246.3719 714.666,-252.3719 714.666,-252.3719 714.666,-264.3719 714.666,-264.3719 714.666,-270.3719 708.666,-276.3719 702.666,-276.3719"/>
+<text text-anchor="middle" x="606.666" y="-254.6719" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take5</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take5&#45;&gt;Parser -->
+<g id="edge39" class="edge conformsTo">
+<title>Parsers.Take5&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M682.2481,-240.3039C736.4194,-227.3542 809.4516,-209.8958 865.7229,-196.4441"/>
+<polygon fill="#000000" stroke="#000000" points="866.7576,-199.7955 875.6698,-194.0663 865.13,-192.9873 866.7576,-199.7955"/>
+</g>
+<!-- Newline -->
+<g id="node35" class="node structure">
+<title>Newline</title>
+<g id="a_node35"><a xlink:href="/swift-parsing/Newline" xlink:title="Newline">
+<path fill="none" stroke="#000000" d="M1500.8639,-265.5741C1500.8639,-265.5741 1308.8639,-265.5741 1308.8639,-265.5741 1302.8639,-265.5741 1296.8639,-259.5741 1296.8639,-253.5741 1296.8639,-253.5741 1296.8639,-241.5741 1296.8639,-241.5741 1296.8639,-235.5741 1302.8639,-229.5741 1308.8639,-229.5741 1308.8639,-229.5741 1500.8639,-229.5741 1500.8639,-229.5741 1506.8639,-229.5741 1512.8639,-235.5741 1512.8639,-241.5741 1512.8639,-241.5741 1512.8639,-253.5741 1512.8639,-253.5741 1512.8639,-259.5741 1506.8639,-265.5741 1500.8639,-265.5741"/>
+<text text-anchor="middle" x="1404.8639" y="-243.8741" font-family="Menlo" font-size="14.00" fill="#000000">Newline</text>
+</a>
+</g>
+</g>
+<!-- Newline&#45;&gt;Parser -->
+<g id="edge11" class="edge conformsTo">
+<title>Newline&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1296.7468,-230.5309C1228.2845,-219.7388 1139.7294,-205.7792 1069.391,-194.6913"/>
+<polygon fill="#000000" stroke="#000000" points="1069.573,-191.1769 1059.15,-193.0769 1068.4829,-198.0915 1069.573,-191.1769"/>
+</g>
+<!-- Parsers.IntParser -->
+<g id="node36" class="node structure">
+<title>Parsers.IntParser</title>
+<g id="a_node36"><a xlink:href="/swift-parsing/Parsers_IntParser" xlink:title="Parsers.IntParser">
+<path fill="none" stroke="#000000" d="M1031.5215,-116.7172C1031.5215,-116.7172 839.5215,-116.7172 839.5215,-116.7172 833.5215,-116.7172 827.5215,-110.7172 827.5215,-104.7172 827.5215,-104.7172 827.5215,-92.7172 827.5215,-92.7172 827.5215,-86.7172 833.5215,-80.7172 839.5215,-80.7172 839.5215,-80.7172 1031.5215,-80.7172 1031.5215,-80.7172 1037.5215,-80.7172 1043.5215,-86.7172 1043.5215,-92.7172 1043.5215,-92.7172 1043.5215,-104.7172 1043.5215,-104.7172 1043.5215,-110.7172 1037.5215,-116.7172 1031.5215,-116.7172"/>
+<text text-anchor="middle" x="935.5215" y="-95.0172" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.IntParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.IntParser&#45;&gt;Parser -->
+<g id="edge48" class="edge conformsTo">
+<title>Parsers.IntParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M939.2076,-117.0417C941.0672,-126.2862 943.363,-137.6993 945.4384,-148.0165"/>
+<polygon fill="#000000" stroke="#000000" points="942.0126,-148.7341 947.416,-157.8475 948.8751,-147.3536 942.0126,-148.7341"/>
+</g>
+<!-- Parsers.SubstringFloat80Parser -->
+<g id="node37" class="node structure">
+<title>Parsers.SubstringFloat80Parser</title>
+<g id="a_node37"><a xlink:href="/swift-parsing/Parsers_SubstringFloat80Parser" xlink:title="Parsers.SubstringFloat80Parser">
+<path fill="none" stroke="#000000" d="M1150.2177,-242.7464C1150.2177,-242.7464 935.2177,-242.7464 935.2177,-242.7464 929.2177,-242.7464 923.2177,-236.7464 923.2177,-230.7464 923.2177,-230.7464 923.2177,-218.7464 923.2177,-218.7464 923.2177,-212.7464 929.2177,-206.7464 935.2177,-206.7464 935.2177,-206.7464 1150.2177,-206.7464 1150.2177,-206.7464 1156.2177,-206.7464 1162.2177,-212.7464 1162.2177,-218.7464 1162.2177,-218.7464 1162.2177,-230.7464 1162.2177,-230.7464 1162.2177,-236.7464 1156.2177,-242.7464 1150.2177,-242.7464"/>
+<text text-anchor="middle" x="1042.7177" y="-221.0464" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringFloat80Parser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringFloat80Parser&#45;&gt;Parser -->
+<g id="edge30" class="edge conformsTo">
+<title>Parsers.SubstringFloat80Parser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1008.5936,-206.6101C1003.942,-204.1379 999.1181,-201.5741 994.3316,-199.0301"/>
+<polygon fill="#000000" stroke="#000000" points="995.7012,-195.7945 985.2283,-194.1919 992.416,-201.9757 995.7012,-195.7945"/>
+</g>
+<!-- Parsers.UUIDParser -->
+<g id="node38" class="node structure">
+<title>Parsers.UUIDParser</title>
+<g id="a_node38"><a xlink:href="/swift-parsing/Parsers_UUIDParser" xlink:title="Parsers.UUIDParser">
+<path fill="none" stroke="#000000" d="M1370.3734,-344.0378C1370.3734,-344.0378 1178.3734,-344.0378 1178.3734,-344.0378 1172.3734,-344.0378 1166.3734,-338.0378 1166.3734,-332.0378 1166.3734,-332.0378 1166.3734,-320.0378 1166.3734,-320.0378 1166.3734,-314.0378 1172.3734,-308.0378 1178.3734,-308.0378 1178.3734,-308.0378 1370.3734,-308.0378 1370.3734,-308.0378 1376.3734,-308.0378 1382.3734,-314.0378 1382.3734,-320.0378 1382.3734,-320.0378 1382.3734,-332.0378 1382.3734,-332.0378 1382.3734,-338.0378 1376.3734,-344.0378 1370.3734,-344.0378"/>
+<text text-anchor="middle" x="1274.3734" y="-322.3378" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.UUIDParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.UUIDParser&#45;&gt;Parser -->
+<g id="edge44" class="edge conformsTo">
+<title>Parsers.UUIDParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1235.3762,-307.9446C1176.0696,-280.4288 1063.3293,-228.1217 999.0754,-198.3105"/>
+<polygon fill="#000000" stroke="#000000" points="1000.5035,-195.1147 989.9593,-194.0809 997.5574,-201.4646 1000.5035,-195.1147"/>
+</g>
+<!-- Parsers.Pullback -->
+<g id="node39" class="node structure">
+<title>Parsers.Pullback</title>
+<g id="a_node39"><a xlink:href="/swift-parsing/Parsers_Pullback" xlink:title="Parsers.Pullback">
+<path fill="none" stroke="#000000" d="M286.9265,-216.5868C286.9265,-216.5868 94.9265,-216.5868 94.9265,-216.5868 88.9265,-216.5868 82.9265,-210.5868 82.9265,-204.5868 82.9265,-204.5868 82.9265,-192.5868 82.9265,-192.5868 82.9265,-186.5868 88.9265,-180.5868 94.9265,-180.5868 94.9265,-180.5868 286.9265,-180.5868 286.9265,-180.5868 292.9265,-180.5868 298.9265,-186.5868 298.9265,-192.5868 298.9265,-192.5868 298.9265,-204.5868 298.9265,-204.5868 298.9265,-210.5868 292.9265,-216.5868 286.9265,-216.5868"/>
+<text text-anchor="middle" x="190.9265" y="-194.8868" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Pullback</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Pullback&#45;&gt;Parser -->
+<g id="edge28" class="edge conformsTo">
+<title>Parsers.Pullback&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M299.03,-195.3804C440.2299,-191.1923 686.5964,-183.885 832.6948,-179.5517"/>
+<polygon fill="#000000" stroke="#000000" points="833.146,-183.0399 843.0378,-179.2449 832.9384,-176.043 833.146,-183.0399"/>
+</g>
+<!-- Prefix -->
+<g id="node40" class="node structure">
+<title>Prefix</title>
+<g id="a_node40"><a xlink:href="/swift-parsing/Prefix" xlink:title="Prefix">
+<path fill="none" stroke="#000000" d="M273.2573,-168.379C273.2573,-168.379 81.2573,-168.379 81.2573,-168.379 75.2573,-168.379 69.2573,-162.379 69.2573,-156.379 69.2573,-156.379 69.2573,-144.379 69.2573,-144.379 69.2573,-138.379 75.2573,-132.379 81.2573,-132.379 81.2573,-132.379 273.2573,-132.379 273.2573,-132.379 279.2573,-132.379 285.2573,-138.379 285.2573,-144.379 285.2573,-144.379 285.2573,-156.379 285.2573,-156.379 285.2573,-162.379 279.2573,-168.379 273.2573,-168.379"/>
+<text text-anchor="middle" x="177.2573" y="-146.679" font-family="Menlo" font-size="14.00" fill="#000000">Prefix</text>
+</a>
+</g>
+</g>
+<!-- Prefix&#45;&gt;Parser -->
+<g id="edge32" class="edge conformsTo">
+<title>Prefix&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M285.2605,-153.9606C429.3886,-158.7402 683.719,-167.1743 832.8514,-172.1199"/>
+<polygon fill="#000000" stroke="#000000" points="832.8514,-175.6217 842.962,-172.4552 833.0835,-168.6256 832.8514,-175.6217"/>
+</g>
+<!-- Parsers.SkipSecond -->
+<g id="node41" class="node structure">
+<title>Parsers.SkipSecond</title>
+<g id="a_node41"><a xlink:href="/swift-parsing/Parsers_SkipSecond" xlink:title="Parsers.SkipSecond">
+<path fill="none" stroke="#000000" d="M718.1982,-322.5042C718.1982,-322.5042 526.1982,-322.5042 526.1982,-322.5042 520.1982,-322.5042 514.1982,-316.5042 514.1982,-310.5042 514.1982,-310.5042 514.1982,-298.5042 514.1982,-298.5042 514.1982,-292.5042 520.1982,-286.5042 526.1982,-286.5042 526.1982,-286.5042 718.1982,-286.5042 718.1982,-286.5042 724.1982,-286.5042 730.1982,-292.5042 730.1982,-298.5042 730.1982,-298.5042 730.1982,-310.5042 730.1982,-310.5042 730.1982,-316.5042 724.1982,-322.5042 718.1982,-322.5042"/>
+<text text-anchor="middle" x="622.1982" y="-300.8042" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SkipSecond</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SkipSecond&#45;&gt;Parser -->
+<g id="edge41" class="edge conformsTo">
+<title>Parsers.SkipSecond&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M668.6208,-286.371C728.2399,-263.083 831.6037,-222.7077 895.39,-197.792"/>
+<polygon fill="#000000" stroke="#000000" points="896.8481,-200.9801 904.8892,-194.0815 894.3011,-194.4598 896.8481,-200.9801"/>
+</g>
+<!-- Whitespace -->
+<g id="node42" class="node structure">
+<title>Whitespace</title>
+<g id="a_node42"><a xlink:href="/swift-parsing/Whitespace" xlink:title="Whitespace">
+<path fill="none" stroke="#000000" d="M487.752,-298.4099C487.752,-298.4099 295.752,-298.4099 295.752,-298.4099 289.752,-298.4099 283.752,-292.4099 283.752,-286.4099 283.752,-286.4099 283.752,-274.4099 283.752,-274.4099 283.752,-268.4099 289.752,-262.4099 295.752,-262.4099 295.752,-262.4099 487.752,-262.4099 487.752,-262.4099 493.752,-262.4099 499.752,-268.4099 499.752,-274.4099 499.752,-274.4099 499.752,-286.4099 499.752,-286.4099 499.752,-292.4099 493.752,-298.4099 487.752,-298.4099"/>
+<text text-anchor="middle" x="391.752" y="-276.7099" font-family="Menlo" font-size="14.00" fill="#000000">Whitespace</text>
+</a>
+</g>
+</g>
+<!-- Whitespace&#45;&gt;Parser -->
+<g id="edge10" class="edge conformsTo">
+<title>Whitespace&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M488.2215,-262.4087C587.4199,-243.8984 741.5258,-215.1423 844.3268,-195.9597"/>
+<polygon fill="#000000" stroke="#000000" points="845.2337,-199.351 854.4219,-194.076 843.9496,-192.4698 845.2337,-199.351"/>
+</g>
+<!-- Parsers.SubstringToUTF8View -->
+<g id="node43" class="node structure">
+<title>Parsers.SubstringToUTF8View</title>
+<g id="a_node43"><a xlink:href="/swift-parsing/Parsers_SubstringToUTF8View" xlink:title="Parsers.SubstringToUTF8View">
+<path fill="none" stroke="#000000" d="M507.8042,-213.1208C507.8042,-213.1208 303.8042,-213.1208 303.8042,-213.1208 297.8042,-213.1208 291.8042,-207.1208 291.8042,-201.1208 291.8042,-201.1208 291.8042,-189.1208 291.8042,-189.1208 291.8042,-183.1208 297.8042,-177.1208 303.8042,-177.1208 303.8042,-177.1208 507.8042,-177.1208 507.8042,-177.1208 513.8042,-177.1208 519.8042,-183.1208 519.8042,-189.1208 519.8042,-189.1208 519.8042,-201.1208 519.8042,-201.1208 519.8042,-207.1208 513.8042,-213.1208 507.8042,-213.1208"/>
+<text text-anchor="middle" x="405.8042" y="-191.4208" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringToUTF8View</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringToUTF8View&#45;&gt;Parser -->
+<g id="edge34" class="edge conformsTo">
+<title>Parsers.SubstringToUTF8View&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M520.111,-191.1209C611.7665,-187.9137 739.9568,-183.428 832.6775,-180.1835"/>
+<polygon fill="#000000" stroke="#000000" points="833.0803,-183.6716 842.9517,-179.824 832.8354,-176.6759 833.0803,-183.6716"/>
+</g>
+<!-- StartsWith -->
+<g id="node44" class="node structure">
+<title>StartsWith</title>
+<g id="a_node44"><a xlink:href="/swift-parsing/StartsWith" xlink:title="StartsWith">
+<path fill="none" stroke="#000000" d="M1711.1997,-266.6686C1711.1997,-266.6686 1519.1997,-266.6686 1519.1997,-266.6686 1513.1997,-266.6686 1507.1997,-260.6686 1507.1997,-254.6686 1507.1997,-254.6686 1507.1997,-242.6686 1507.1997,-242.6686 1507.1997,-236.6686 1513.1997,-230.6686 1519.1997,-230.6686 1519.1997,-230.6686 1711.1997,-230.6686 1711.1997,-230.6686 1717.1997,-230.6686 1723.1997,-236.6686 1723.1997,-242.6686 1723.1997,-242.6686 1723.1997,-254.6686 1723.1997,-254.6686 1723.1997,-260.6686 1717.1997,-266.6686 1711.1997,-266.6686"/>
+<text text-anchor="middle" x="1615.1997" y="-244.9686" font-family="Menlo" font-size="14.00" fill="#000000">StartsWith</text>
+</a>
+</g>
+</g>
+<!-- StartsWith&#45;&gt;Parser -->
+<g id="edge20" class="edge conformsTo">
+<title>StartsWith&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1507.0186,-236.838C1386.8975,-223.7016 1193.6142,-202.5643 1069.5099,-188.9924"/>
+<polygon fill="#000000" stroke="#000000" points="1069.5317,-185.474 1059.2104,-187.866 1068.7706,-192.4325 1069.5317,-185.474"/>
+</g>
+<!-- Always -->
+<g id="node45" class="node structure">
+<title>Always</title>
+<g id="a_node45"><a xlink:href="/swift-parsing/Always" xlink:title="Always">
+<path fill="none" stroke="#000000" d="M1689.4714,-185.4838C1689.4714,-185.4838 1497.4714,-185.4838 1497.4714,-185.4838 1491.4714,-185.4838 1485.4714,-179.4838 1485.4714,-173.4838 1485.4714,-173.4838 1485.4714,-161.4838 1485.4714,-161.4838 1485.4714,-155.4838 1491.4714,-149.4838 1497.4714,-149.4838 1497.4714,-149.4838 1689.4714,-149.4838 1689.4714,-149.4838 1695.4714,-149.4838 1701.4714,-155.4838 1701.4714,-161.4838 1701.4714,-161.4838 1701.4714,-173.4838 1701.4714,-173.4838 1701.4714,-179.4838 1695.4714,-185.4838 1689.4714,-185.4838"/>
+<text text-anchor="middle" x="1593.4714" y="-163.7838" font-family="Menlo" font-size="14.00" fill="#000000">Always</text>
+</a>
+</g>
+</g>
+<!-- Always&#45;&gt;Parser -->
+<g id="edge51" class="edge conformsTo">
+<title>Always&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1485.2241,-168.9257C1370.0453,-170.4598 1188.3754,-172.8797 1069.4642,-174.4635"/>
+<polygon fill="#000000" stroke="#000000" points="1069.1826,-170.9669 1059.2301,-174.5999 1069.2759,-177.9663 1069.1826,-170.9669"/>
+</g>
+<!-- Parsers.Map -->
+<g id="node46" class="node structure">
+<title>Parsers.Map</title>
+<g id="a_node46"><a xlink:href="/swift-parsing/Parsers_Map" xlink:title="Parsers.Map">
+<path fill="none" stroke="#000000" d="M335.3608,-118.0719C335.3608,-118.0719 143.3608,-118.0719 143.3608,-118.0719 137.3608,-118.0719 131.3608,-112.0719 131.3608,-106.0719 131.3608,-106.0719 131.3608,-94.0719 131.3608,-94.0719 131.3608,-88.0719 137.3608,-82.0719 143.3608,-82.0719 143.3608,-82.0719 335.3608,-82.0719 335.3608,-82.0719 341.3608,-82.0719 347.3608,-88.0719 347.3608,-94.0719 347.3608,-94.0719 347.3608,-106.0719 347.3608,-106.0719 347.3608,-112.0719 341.3608,-118.0719 335.3608,-118.0719"/>
+<text text-anchor="middle" x="239.3608" y="-96.3719" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Map</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Map&#45;&gt;Parser -->
+<g id="edge37" class="edge conformsTo">
+<title>Parsers.Map&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M347.455,-111.6099C478.244,-125.5703 697.6758,-148.9925 832.8534,-163.4214"/>
+<polygon fill="#000000" stroke="#000000" points="832.5259,-166.9062 842.8409,-164.4875 833.2689,-159.9458 832.5259,-166.9062"/>
+</g>
+<!-- AnyParser -->
+<g id="node47" class="node structure">
+<title>AnyParser</title>
+<g id="a_node47"><a xlink:href="/swift-parsing/AnyParser" xlink:title="AnyParser">
+<path fill="none" stroke="#000000" d="M1750.8992,-131.8107C1750.8992,-131.8107 1558.8992,-131.8107 1558.8992,-131.8107 1552.8992,-131.8107 1546.8992,-125.8107 1546.8992,-119.8107 1546.8992,-119.8107 1546.8992,-107.8107 1546.8992,-107.8107 1546.8992,-101.8107 1552.8992,-95.8107 1558.8992,-95.8107 1558.8992,-95.8107 1750.8992,-95.8107 1750.8992,-95.8107 1756.8992,-95.8107 1762.8992,-101.8107 1762.8992,-107.8107 1762.8992,-107.8107 1762.8992,-119.8107 1762.8992,-119.8107 1762.8992,-125.8107 1756.8992,-131.8107 1750.8992,-131.8107"/>
+<text text-anchor="middle" x="1654.8992" y="-110.1107" font-family="Menlo" font-size="14.00" fill="#000000">AnyParser</text>
+</a>
+</g>
+</g>
+<!-- AnyParser&#45;&gt;Parser -->
+<g id="edge4" class="edge conformsTo">
+<title>AnyParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1546.8536,-123.3637C1417.8492,-134.7699 1202.8297,-153.7812 1069.4337,-165.5756"/>
+<polygon fill="#000000" stroke="#000000" points="1068.83,-162.1153 1059.1772,-166.4825 1069.4466,-169.0881 1068.83,-162.1153"/>
+</g>
+<!-- FirstWhere -->
+<g id="node48" class="node structure">
+<title>FirstWhere</title>
+<g id="a_node48"><a xlink:href="/swift-parsing/FirstWhere" xlink:title="FirstWhere">
+<path fill="none" stroke="#000000" d="M1435.6237,-99.0607C1435.6237,-99.0607 1243.6237,-99.0607 1243.6237,-99.0607 1237.6237,-99.0607 1231.6237,-93.0607 1231.6237,-87.0607 1231.6237,-87.0607 1231.6237,-75.0607 1231.6237,-75.0607 1231.6237,-69.0607 1237.6237,-63.0607 1243.6237,-63.0607 1243.6237,-63.0607 1435.6237,-63.0607 1435.6237,-63.0607 1441.6237,-63.0607 1447.6237,-69.0607 1447.6237,-75.0607 1447.6237,-75.0607 1447.6237,-87.0607 1447.6237,-87.0607 1447.6237,-93.0607 1441.6237,-99.0607 1435.6237,-99.0607"/>
+<text text-anchor="middle" x="1339.6237" y="-77.3607" font-family="Menlo" font-size="14.00" fill="#000000">FirstWhere</text>
+</a>
+</g>
+</g>
+<!-- FirstWhere&#45;&gt;Parser -->
+<g id="edge23" class="edge conformsTo">
+<title>FirstWhere&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1265.6262,-99.1492C1199.7296,-115.2575 1103.395,-138.8063 1034.7221,-155.5933"/>
+<polygon fill="#000000" stroke="#000000" points="1033.6805,-152.2447 1024.7976,-158.0193 1035.3427,-159.0445 1033.6805,-152.2447"/>
+</g>
+<!-- Parsers.Take11 -->
+<g id="node49" class="node structure">
+<title>Parsers.Take11</title>
+<g id="a_node49"><a xlink:href="/swift-parsing/Parsers_Take11" xlink:title="Parsers.Take11">
+<path fill="none" stroke="#000000" d="M1847.2678,-221.691C1847.2678,-221.691 1655.2678,-221.691 1655.2678,-221.691 1649.2678,-221.691 1643.2678,-215.691 1643.2678,-209.691 1643.2678,-209.691 1643.2678,-197.691 1643.2678,-197.691 1643.2678,-191.691 1649.2678,-185.691 1655.2678,-185.691 1655.2678,-185.691 1847.2678,-185.691 1847.2678,-185.691 1853.2678,-185.691 1859.2678,-191.691 1859.2678,-197.691 1859.2678,-197.691 1859.2678,-209.691 1859.2678,-209.691 1859.2678,-215.691 1853.2678,-221.691 1847.2678,-221.691"/>
+<text text-anchor="middle" x="1751.2678" y="-199.991" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.Take11</text>
+</a>
+</g>
+</g>
+<!-- Parsers.Take11&#45;&gt;Parser -->
+<g id="edge3" class="edge conformsTo">
+<title>Parsers.Take11&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1642.9342,-199.9475C1493.2622,-194.7756 1224.2147,-185.4787 1069.4214,-180.1299"/>
+<polygon fill="#000000" stroke="#000000" points="1069.5081,-176.6309 1059.3931,-179.7834 1069.2663,-183.6267 1069.5081,-176.6309"/>
+</g>
+<!-- Many -->
+<g id="node50" class="node structure">
+<title>Many</title>
+<g id="a_node50"><a xlink:href="/swift-parsing/Many" xlink:title="Many">
+<path fill="none" stroke="#000000" d="M1881.8189,-189.1157C1881.8189,-189.1157 1689.8189,-189.1157 1689.8189,-189.1157 1683.8189,-189.1157 1677.8189,-183.1157 1677.8189,-177.1157 1677.8189,-177.1157 1677.8189,-165.1157 1677.8189,-165.1157 1677.8189,-159.1157 1683.8189,-153.1157 1689.8189,-153.1157 1689.8189,-153.1157 1881.8189,-153.1157 1881.8189,-153.1157 1887.8189,-153.1157 1893.8189,-159.1157 1893.8189,-165.1157 1893.8189,-165.1157 1893.8189,-177.1157 1893.8189,-177.1157 1893.8189,-183.1157 1887.8189,-189.1157 1881.8189,-189.1157"/>
+<text text-anchor="middle" x="1785.8189" y="-167.4157" font-family="Menlo" font-size="14.00" fill="#000000">Many</text>
+</a>
+</g>
+</g>
+<!-- Many&#45;&gt;Parser -->
+<g id="edge35" class="edge conformsTo">
+<title>Many&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1677.5465,-171.7545C1520.6985,-172.6799 1231.352,-174.3869 1069.1732,-175.3437"/>
+<polygon fill="#000000" stroke="#000000" points="1069.1353,-171.8438 1059.1561,-175.4028 1069.1766,-178.8437 1069.1353,-171.8438"/>
+</g>
+<!-- Parsers.SubstringFloatParser -->
+<g id="node51" class="node structure">
+<title>Parsers.SubstringFloatParser</title>
+<g id="a_node51"><a xlink:href="/swift-parsing/Parsers_SubstringFloatParser" xlink:title="Parsers.SubstringFloatParser">
+<path fill="none" stroke="#000000" d="M334.3788,-145.231C334.3788,-145.231 137.3788,-145.231 137.3788,-145.231 131.3788,-145.231 125.3788,-139.231 125.3788,-133.231 125.3788,-133.231 125.3788,-121.231 125.3788,-121.231 125.3788,-115.231 131.3788,-109.231 137.3788,-109.231 137.3788,-109.231 334.3788,-109.231 334.3788,-109.231 340.3788,-109.231 346.3788,-115.231 346.3788,-121.231 346.3788,-121.231 346.3788,-133.231 346.3788,-133.231 346.3788,-139.231 340.3788,-145.231 334.3788,-145.231"/>
+<text text-anchor="middle" x="235.8788" y="-123.531" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SubstringFloatParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SubstringFloatParser&#45;&gt;Parser -->
+<g id="edge22" class="edge conformsTo">
+<title>Parsers.SubstringFloatParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M346.452,-134.7772C478.3265,-143.7772 697.8505,-158.7588 832.9636,-167.9798"/>
+<polygon fill="#000000" stroke="#000000" points="832.7308,-171.4719 842.9459,-168.661 833.2075,-164.4882 832.7308,-171.4719"/>
+</g>
+<!-- Parsers.OneOf -->
+<g id="node52" class="node structure">
+<title>Parsers.OneOf</title>
+<g id="a_node52"><a xlink:href="/swift-parsing/Parsers_OneOf" xlink:title="Parsers.OneOf">
+<path fill="none" stroke="#000000" d="M1833.0857,-258.2526C1833.0857,-258.2526 1641.0857,-258.2526 1641.0857,-258.2526 1635.0857,-258.2526 1629.0857,-252.2526 1629.0857,-246.2526 1629.0857,-246.2526 1629.0857,-234.2526 1629.0857,-234.2526 1629.0857,-228.2526 1635.0857,-222.2526 1641.0857,-222.2526 1641.0857,-222.2526 1833.0857,-222.2526 1833.0857,-222.2526 1839.0857,-222.2526 1845.0857,-228.2526 1845.0857,-234.2526 1845.0857,-234.2526 1845.0857,-246.2526 1845.0857,-246.2526 1845.0857,-252.2526 1839.0857,-258.2526 1833.0857,-258.2526"/>
+<text text-anchor="middle" x="1737.0857" y="-236.5526" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.OneOf</text>
+</a>
+</g>
+</g>
+<!-- Parsers.OneOf&#45;&gt;Parser -->
+<g id="edge53" class="edge conformsTo">
+<title>Parsers.OneOf&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1629.0313,-231.4252C1482.3878,-219.4453 1221.284,-198.1148 1069.4722,-185.7127"/>
+<polygon fill="#000000" stroke="#000000" points="1069.4353,-182.1981 1059.1835,-184.8722 1068.8652,-189.1749 1069.4353,-182.1981"/>
+</g>
+<!-- Conditional -->
+<g id="node53" class="node enumeration">
+<title>Conditional</title>
+<g id="a_node53"><a xlink:href="/swift-parsing/Conditional" xlink:title="Conditional">
+<path fill="none" stroke="#000000" d="M1155.9616,-349.6668C1155.9616,-349.6668 963.9616,-349.6668 963.9616,-349.6668 957.9616,-349.6668 951.9616,-343.6668 951.9616,-337.6668 951.9616,-337.6668 951.9616,-325.6668 951.9616,-325.6668 951.9616,-319.6668 957.9616,-313.6668 963.9616,-313.6668 963.9616,-313.6668 1155.9616,-313.6668 1155.9616,-313.6668 1161.9616,-313.6668 1167.9616,-319.6668 1167.9616,-325.6668 1167.9616,-325.6668 1167.9616,-337.6668 1167.9616,-337.6668 1167.9616,-343.6668 1161.9616,-349.6668 1155.9616,-349.6668"/>
+<text text-anchor="middle" x="1059.9616" y="-327.9668" font-family="Menlo" font-size="14.00" fill="#000000">Conditional</text>
+</a>
+</g>
+</g>
+<!-- Conditional&#45;&gt;Parser -->
+<g id="edge15" class="edge conformsTo">
+<title>Conditional&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1047.2579,-313.5099C1028.0798,-286.0994 991.6324,-234.0065 969.5268,-202.4119"/>
+<polygon fill="#000000" stroke="#000000" points="972.299,-200.2689 963.6984,-194.0817 966.5635,-204.2818 972.299,-200.2689"/>
+</g>
+<!-- Parsers.SkipFirst -->
+<g id="node54" class="node structure">
+<title>Parsers.SkipFirst</title>
+<g id="a_node54"><a xlink:href="/swift-parsing/Parsers_SkipFirst" xlink:title="Parsers.SkipFirst">
+<path fill="none" stroke="#000000" d="M985.4315,-352.2045C985.4315,-352.2045 793.4315,-352.2045 793.4315,-352.2045 787.4315,-352.2045 781.4315,-346.2045 781.4315,-340.2045 781.4315,-340.2045 781.4315,-328.2045 781.4315,-328.2045 781.4315,-322.2045 787.4315,-316.2045 793.4315,-316.2045 793.4315,-316.2045 985.4315,-316.2045 985.4315,-316.2045 991.4315,-316.2045 997.4315,-322.2045 997.4315,-328.2045 997.4315,-328.2045 997.4315,-340.2045 997.4315,-340.2045 997.4315,-346.2045 991.4315,-352.2045 985.4315,-352.2045"/>
+<text text-anchor="middle" x="889.4315" y="-330.5045" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.SkipFirst</text>
+</a>
+</g>
+</g>
+<!-- Parsers.SkipFirst&#45;&gt;Parser -->
+<g id="edge16" class="edge conformsTo">
+<title>Parsers.SkipFirst&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M896.5029,-316.0611C907.2217,-288.5591 927.6644,-236.1082 940.2594,-203.7922"/>
+<polygon fill="#000000" stroke="#000000" points="943.5265,-205.0478 943.8969,-194.4595 937.0043,-202.5058 943.5265,-205.0478"/>
+</g>
+<!-- Parsers.BoolParser -->
+<g id="node55" class="node structure">
+<title>Parsers.BoolParser</title>
+<g id="a_node55"><a xlink:href="/swift-parsing/Parsers_BoolParser" xlink:title="Parsers.BoolParser">
+<path fill="none" stroke="#000000" d="M1284.8342,-322.3745C1284.8342,-322.3745 1092.8342,-322.3745 1092.8342,-322.3745 1086.8342,-322.3745 1080.8342,-316.3745 1080.8342,-310.3745 1080.8342,-310.3745 1080.8342,-298.3745 1080.8342,-298.3745 1080.8342,-292.3745 1086.8342,-286.3745 1092.8342,-286.3745 1092.8342,-286.3745 1284.8342,-286.3745 1284.8342,-286.3745 1290.8342,-286.3745 1296.8342,-292.3745 1296.8342,-298.3745 1296.8342,-298.3745 1296.8342,-310.3745 1296.8342,-310.3745 1296.8342,-316.3745 1290.8342,-322.3745 1284.8342,-322.3745"/>
+<text text-anchor="middle" x="1188.8342" y="-300.6745" font-family="Menlo" font-size="14.00" fill="#000000">Parsers.BoolParser</text>
+</a>
+</g>
+</g>
+<!-- Parsers.BoolParser&#45;&gt;Parser -->
+<g id="edge5" class="edge conformsTo">
+<title>Parsers.BoolParser&#45;&gt;Parser</title>
+<path fill="none" stroke="#000000" d="M1155.2734,-286.2596C1112.792,-263.3295 1039.5883,-223.8166 993.339,-198.8528"/>
+<polygon fill="#000000" stroke="#000000" points="994.928,-195.7332 984.4656,-194.0633 991.6031,-201.8932 994.928,-195.7332"/>
+</g>
+</g>
+</svg>
+
+
+    <figcaption hidden>Inheritance graph for Parser.</figcaption>
+</figure>
+        <h3>Types Conforming to <code>Parser</code></h3>
+<dl>
+    <dt class="structure"><code><a href="/swift-parsing/Always">Always</a></code></dt>
+<dd><p>A parser that always succeeds by returning the provided value, but does not consume any of its
+input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/AnyParser">AnyParser</a></code></dt>
+<dd><p>A type-erased parser of <code>Output</code> from <code>Input</code>.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_BoolParser">Parsers.BoolParser</a></code></dt>
+<dd><p>A parser that consumes a Boolean value from the beginning of a collection of UTF-8 code units.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringBoolParser">Parsers.SubstringBoolParser</a></code></dt>
+<dd><p>A parser that consumes a Boolean value from the beginning of a substring.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_CompactMap">Parsers.CompactMap</a></code></dt>
+<dd><p>A parser that outputs the non-<code>nil</code> results of calling the given transformation with the
+output of its upstream parser.</p>
+</dd>
+<dt class="enumeration"><code><a href="/swift-parsing/Conditional">Conditional</a></code></dt>
+<dd><p>A parser that can parse output from two types of parsers.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_DoubleParser">Parsers.DoubleParser</a></code></dt>
+<dd><p>A parser that consumes a double from the beginning of a collection of UTF-8 code units.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringDoubleParser">Parsers.SubstringDoubleParser</a></code></dt>
+<dd><p>A parser that consumes a double from the beginning of a substring.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_FloatParser">Parsers.FloatParser</a></code></dt>
+<dd><p>A parser that consumes a float from the beginning of a collection of UTF-8 code units.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringFloatParser">Parsers.SubstringFloatParser</a></code></dt>
+<dd><p>A parser that consumes a float from the beginning of a substring.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Float80Parser">Parsers.Float80Parser</a></code></dt>
+<dd><p>A parser that consumes a float from the beginning of a collection of UTF-8 code units.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringFloat80Parser">Parsers.SubstringFloat80Parser</a></code></dt>
+<dd><p>A parser that consumes a float from the beginning of a substring.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/End">End</a></code></dt>
+<dd><p>A parser that succeeds if the input is empty, and fails otherwise.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Fail">Fail</a></code></dt>
+<dd><p>A parser that always fails, no matter the input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Filter">Parsers.Filter</a></code></dt>
+<dd><p>A parser that filters the output of an upstream parser when it does not satisfy a predicate.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/First">First</a></code></dt>
+<dd><p>A parser that consumes the first element from a collection.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/FirstWhere">FirstWhere</a></code></dt>
+<dd></dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_FlatMap">Parsers.FlatMap</a></code></dt>
+<dd><p>A parser that transforms the output of another parser into a new parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_IntParser">Parsers.IntParser</a></code></dt>
+<dd><p>A parser that consumes an integer (with an optional leading <code>+</code> or <code>-</code> sign) from the
+beginning of a collection of UTF8 code units.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringIntParser">Parsers.SubstringIntParser</a></code></dt>
+<dd><p>A parser that consumes an integer (with an optional leading <code>+</code> or <code>-</code> sign) from the
+beginning of a substring using a UTF-8 parser.</p>
+</dd>
+<dt class="class"><code><a href="/swift-parsing/Lazy">Lazy</a></code></dt>
+<dd><p>A parser that waits for a call to its <code>parse(_:)</code> method before running the given closure to
+create a parser for the given input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Many">Many</a></code></dt>
+<dd><p>A parser that attempts to run another parser as many times as specified, accumulating the result
+of the outputs.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Map">Parsers.Map</a></code></dt>
+<dd><p>A parser that transforms the output of another parser with a given closure.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Newline">Newline</a></code></dt>
+<dd><p>A parser that consumes a single newline from the beginning of the input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/OneOfMany">OneOfMany</a></code></dt>
+<dd><p>A parser that attempts to run a number of parsers till one succeeds.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_OneOf">Parsers.OneOf</a></code></dt>
+<dd><p>A parser that runs the first parser and, if it fails, runs the second parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_OptionalParser">Parsers.OptionalParser</a></code></dt>
+<dd><p>A parser that parses <code>nil</code> when its upstream parser fails.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Pipe">Parsers.Pipe</a></code></dt>
+<dd><p>A parser that runs this parser, pipes its output into the given parser, and returns the output
+of the given parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Prefix">Prefix</a></code></dt>
+<dd><p>A parser that consumes a subsequence from the beginning of its input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/PrefixThrough">PrefixThrough</a></code></dt>
+<dd><p>A parser that consumes a subsequence from the beginning of its input through a given sequence of
+elements.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/PrefixUpTo">PrefixUpTo</a></code></dt>
+<dd><p>A parser that consumes a subsequence from the beginning of its input up to a given sequence of
+elements.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Pullback">Parsers.Pullback</a></code></dt>
+<dd><p>Transforms the <code>Input</code> of a downstream parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Rest">Rest</a></code></dt>
+<dd><p>A parser that consumes everything to the end of the collection and returns it as its output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Skip">Skip</a></code></dt>
+<dd><p>A parser that discards the output of another parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SkipFirst">Parsers.SkipFirst</a></code></dt>
+<dd><p>A parser that runs two parsers, one after the other, taking only the output of the second
+parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SkipSecond">Parsers.SkipSecond</a></code></dt>
+<dd><p>A parser that runs two parsers, one after the other, taking only the output of the first
+parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/StartsWith">StartsWith</a></code></dt>
+<dd><p>A parser that parses a sequence of elements from its input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Stream">Parsers.Stream</a></code></dt>
+<dd><p>A parser that can parse streams of input.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take2">Parsers.Take2</a></code></dt>
+<dd><p>A parser that runs two parsers, one after the other, and returns both outputs in a tuple.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take3">Parsers.Take3</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take4">Parsers.Take4</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take5">Parsers.Take5</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.\</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take6">Parsers.Take6</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take7">Parsers.Take7</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take8">Parsers.Take8</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take9">Parsers.Take9</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take10">Parsers.Take10</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_Take11">Parsers.Take11</a></code></dt>
+<dd><p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringToUTF8View">Parsers.SubstringToUTF8View</a></code></dt>
+<dd><p>A parser that transforms a parser on <code>Substring</code> into a parser on <code>Substring.UTF8View</code>.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_UnicodeScalarViewToUTF8View">Parsers.UnicodeScalarViewToUTF8View</a></code></dt>
+<dd><p>A parser that transforms a parser on <code>Substring.UnicodeScalarView</code> into a parser on
+<code>Substring.UTF8View</code>.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_UUIDParser">Parsers.UUIDParser</a></code></dt>
+<dd><p>A parser that consumes a UUID from the beginning of a collection of UTF8 code units.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringUUIDParser">Parsers.SubstringUUIDParser</a></code></dt>
+<dd><p>A parser that consumes a UUID from the beginning of a substring using a UTF-8 parser.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Parsers_SubstringToUnicodeScalars">Parsers.SubstringToUnicodeScalars</a></code></dt>
+<dd><p>A parser that transforms a parser on <code>Substring</code> into a parser on
+<code>Substring.UnicodeScalarView</code>.</p>
+</dd>
+<dt class="structure"><code><a href="/swift-parsing/Whitespace">Whitespace</a></code></dt>
+<dd><p>A parser that consumes all ASCII whitespace from the beginning of the input.</p>
+</dd>
+</dl>
+</section>
+    <section id="default implementations">
+        <h2>Default Implementations</h2>
+
+        <div role="article" class="function" id="parser.parse(_:)">
+    <h3>
+        <code><a href="#parser.parse(_:)">parse(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">parse</span>(<span class="keyword">_</span> <span class="variable">input</span>: <span class="type">Input</span>) -&gt; (<span class="variable">output</span>: <span class="type">Output</span>?, <span class="variable">rest</span>: <span class="type">Input</span>)  </body></html></code></pre>
+</div>
+</div>
+<div role="article" class="function" id="parser.parse(_:)">
+    <h3>
+        <code><a href="#parser.parse(_:)">parse(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">parse</span>&lt;<span class="variable">SuperSequence</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">input</span>: <span class="type">SuperSequence</span>
+  ) -&gt; <span class="type">Output</span>?
+  <span class="keyword">where</span>
+    <span class="type">SuperSequence</span>: <span class="type">Collection</span>,
+    <span class="type">SuperSequence</span>.<span class="type">SubSequence</span> == <span class="type">Input</span></body></html></code></pre>
+</div>
+</div>
+<div role="article" class="function" id="parser.parse(_:)">
+    <h3>
+        <code><a href="#parser.parse(_:)">parse(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">parse</span>&lt;<span class="variable">S</span>: <span class="type">StringProtocol</span>&gt;(<span class="keyword">_</span> <span class="variable">input</span>: <span class="type">S</span>) -&gt; <span class="type">Output</span>?
+  <span class="keyword">where</span>
+    <span class="type">Input</span> == <span class="type">S</span>.<span class="type">SubSequence</span>.<span class="type">UTF8View</span></body></html></code></pre>
+</div>
+</div>
+<div role="article" class="function" id="parser.parse(_:)">
+    <h3>
+        <code><a href="#parser.parse(_:)">parse(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">parse</span>&lt;<span class="variable">S</span>: <span class="type">StringProtocol</span>&gt;(<span class="keyword">_</span> <span class="variable">input</span>: <span class="type">S</span>) -&gt; <span class="type">Output</span>?
+  <span class="keyword">where</span>
+    <span class="type">Input</span> == <span class="type">Slice</span>&lt;<span class="type">UnsafeBufferPointer</span>&lt;<span class="type">UTF8</span>.<span class="type">CodeUnit</span>&gt;&gt;</body></html></code></pre>
+</div>
+</div>
+<div role="article" class="function" id="parser.parse(_:)">
+    <h3>
+        <code><a href="#parser.parse(_:)">parse(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">parse</span>&lt;<span class="variable">C</span>: <span class="type">Collection</span>&gt;(<span class="keyword">_</span> <span class="variable">input</span>: <span class="type">C</span>) -&gt; <span class="type">Output</span>?
+  <span class="keyword">where</span>
+    <span class="type">C</span>.<span class="type">Element</span> == <span class="type">UTF8</span>.<span class="type">CodeUnit</span>,
+    <span class="type">Input</span> == <span class="type">Slice</span>&lt;<span class="type">UnsafeBufferPointer</span>&lt;<span class="type">C</span>.<span class="type">Element</span>&gt;&gt;</body></html></code></pre>
+</div>
+</div>
+<div role="article" class="function" id="parser.erasetoanyparser()">
+    <h3>
+        <code><a href="#parser.erasetoanyparser()">erase​ToAny​Parser()</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">eraseToAnyParser</span>() -&gt; <a href="/swift-parsing/AnyParser"><span class="type">AnyParser</span></a>&lt;<span class="type">Input</span>, <span class="type">Output</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Wraps this parser with a type eraser.</p>
+
+</div>
+<div class="discussion">
+    <p>This form of <em>type erasure</em> preserves abstraction across API boundaries, such as different
+modules.</p>
+
+<p>When you expose your composed parsers as the <code>AnyParser</code> type, you can change the underlying
+implementation over time without affecting existing clients.</p>
+
+<p>Equivalent to passing <code>self</code> to <code>AnyParser.init(_:)</code>.</p>
+
+</div>
+  <h4>Returns</h4>
+  <p>An <code>AnyParser</code> wrapping this publisher.</p>
+
+</div>
+<div role="article" class="function" id="parser.compactmap(_:)">
+    <h3>
+        <code><a href="#parser.compactmap(_:)">compact​Map(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">_disfavoredOverload</span>
+  <span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">compactMap</span>&lt;<span class="variable">NewOutput</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">transform</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Output</span>) -&gt; <span class="type">NewOutput</span>?
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">CompactMap</span>&lt;<span class="keyword">Self</span>, <span class="type">NewOutput</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that outputs the non-<code>nil</code> results of calling the given closure with the
+output of this parser.</p>
+
+</div>
+<div class="discussion">
+    <p>This method is similar to <code>Sequence.compactMap</code> in the Swift standard library, as well as
+<code>Publisher.compactMap</code> in the Combine framework.</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">evenParser</span> = <span class="variable">Int</span>.<span class="variable">parser</span>().<span class="variable">compactMap</span> { <span class="variable">$0</span>.<span class="variable">isMultiple</span>(<span class="variable">of</span>: <span class="number literal">2</span>) }
+<span class="keyword">var</span> <span class="variable">input</span> = <span class="string literal">"</span><span class="string literal">124 hello world</span><span class="string literal">"</span>[...].<span class="variable">utf8</span>
+<span class="keyword">let</span> <span class="variable">output</span> = <span class="variable">evenParser</span>.<span class="variable">parse</span>(&amp;<span class="variable">input</span>) <span class="comment">// 124</span>
+<span class="variable">input</span> <span class="comment">// " hello world"</span>
+</code></pre></body></html>
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>transform</th>
+    <td><code class="type">@escaping (Output) -&gt; New​Output?</code></td>
+    <td><p>A closure that accepts output of this parser as its argument and returns an optional value.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that outputs the non-<code>nil</code> result of calling the given transformation with the output of this parser.</p>
+
+</div>
+<div role="article" class="function" id="parser.filter(_:)">
+    <h3>
+        <code><a href="#parser.filter(_:)">filter(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">_disfavoredOverload</span>
+  <span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">filter</span>(<span class="keyword">_</span> <span class="variable">predicate</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Output</span>) -&gt; <span class="type">Bool</span>) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Filter</span>&lt;<span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that filters output from this parser when its output does not satisfy the
+given predicate.</p>
+
+</div>
+<div class="discussion">
+    <p>This method is similar to <code>Sequence.filter</code> in the Swift standard library, as well as
+<code>Publisher.filter</code> in the Combine framework.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>predicate</th>
+    <td><code class="type">@escaping (Output) -&gt; Bool</code></td>
+    <td><p>A closure that takes an output from this parser and returns a Boolean value indicating whether the output should be returned.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that filters its output.</p>
+
+</div>
+<div role="article" class="function" id="parser.flatmap(_:)">
+    <h3>
+        <code><a href="#parser.flatmap(_:)">flat​Map(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">flatMap</span>&lt;<span class="variable">NewParser</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">transform</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Output</span>) -&gt; <span class="type">NewParser</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">FlatMap</span>&lt;<span class="type">NewParser</span>, <span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that transforms the output of this parser into a new parser.</p>
+
+</div>
+<div class="discussion">
+    <p>This method is similar to <code>Sequence.flatMap</code>, <code>Optional.flatMap</code>, and <code>Result.flatMap</code> in the
+Swift standard library, as well as <code>Publisher.flatMap</code> in the Combine framework.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>transform</th>
+    <td><code class="type">@escaping (Output) -&gt; New​Parser</code></td>
+    <td><p>A closure that transforms values of this parser's output and returns a new parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that transforms output from an upstream parser into a new parser.</p>
+
+</div>
+<div role="article" class="function" id="parser.map(_:)">
+    <h3>
+        <code><a href="#parser.map(_:)">map(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">_disfavoredOverload</span>
+  <span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">map</span>&lt;<span class="variable">NewOutput</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">transform</span>: <span class="attribute">@</span><span class="attribute">escaping</span> (<span class="type">Output</span>) -&gt; <span class="type">NewOutput</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Map</span>&lt;<span class="keyword">Self</span>, <span class="type">NewOutput</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that transforms the output of this parser with a given closure.</p>
+
+</div>
+<div class="discussion">
+    <p>This method is similar to <code>Sequence.map</code>, <code>Optional.map</code>, and <code>Result.map</code> in the Swift
+standard library, as well as <code>Publisher.map</code> in the Combine framework.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>transform</th>
+    <td><code class="type">@escaping (Output) -&gt; New​Output</code></td>
+    <td><p>A closure that transforms values of this parser's output.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser of transformed outputs.</p>
+
+</div>
+<div role="article" class="function" id="parser.orelse(_:)">
+    <h3>
+        <code><a href="#parser.orelse(_:)">or​Else(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">orElse</span>&lt;<span class="variable">P</span>&gt;(<span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">OneOf</span>&lt;<span class="keyword">Self</span>, <span class="type">P</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>A parser that runs this parser and, if it fails, runs the given parser.</p>
+
+</div>
+</div>
+<div role="article" class="function" id="parser.pipe(_:)">
+    <h3>
+        <code><a href="#parser.pipe(_:)">pipe(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">pipe</span>&lt;<span class="variable">Downstream</span>&gt;(<span class="keyword">_</span> <span class="variable">downstream</span>: <span class="type">Downstream</span>) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Pipe</span>&lt;<span class="keyword">Self</span>, <span class="type">Downstream</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser, pipes its output into the given parser, and returns
+the output of the given parser.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>downstream</th>
+    <td><code class="type">Downstream</code></td>
+    <td><p>A parser that parses the output of this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that pipes this parser's output into another parser.</p>
+
+</div>
+<div role="article" class="function" id="parser.pullback(_:)">
+    <h3>
+        <code><a href="#parser.pullback(_:)">pullback(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">pullback</span>&lt;<span class="variable">NewInput</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">keyPath</span>: <span class="type">WritableKeyPath</span>&lt;<span class="type">NewInput</span>, <span class="type">Input</span>&gt;
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Pullback</span>&lt;<span class="keyword">Self</span>, <span class="type">NewInput</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Transforms the <code>Input</code> of a parser.</p>
+
+</div>
+<div class="discussion">
+    <p>This operator allows you to transform a parser of <code>Input</code>s into one on <code>NewInput</code>s, via a
+writable key path from <code>NewInput</code> to <code>Input</code>. Intuitively you can think of this as a way of
+transforming a parser on local data into one on more global data.</p>
+
+<p>For example, the parser <code>Int.parser</code> parses <code>Substring.UTF8View</code> collections into integers,
+and there's a key path from <code>Substring.UTF8View</code> to <code>Substring</code>, and so we can
+<code>pullback(_:)</code>:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">input</span> = <span class="string literal">"</span><span class="string literal">123 Hello world</span><span class="string literal">"</span>[...]
+<span class="keyword">let</span> <span class="variable">output</span> = <span class="variable">Int</span>.<span class="variable">parser</span>.<span class="variable">pullback</span>(\.<span class="variable">utf8</span>).<span class="variable">parse</span>(&amp;<span class="variable">input</span>)
+<span class="variable">precondition</span>(<span class="variable">output</span> == <span class="number literal">123</span>)
+<span class="variable">precondition</span>(<span class="variable">input</span> == <span class="string literal">"</span><span class="string literal">123 Hello world</span><span class="string literal">"</span>
+</code></pre></body></html>
+<p>This has allowed us to parse <code>Substring</code>s with something that is only defined on
+<code>Substring.UTF8View</code>.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>key​Path</th>
+    <td><code class="type">Writable​Key​Path&lt;New​Input, Input&gt;</code></td>
+    <td><p>A key path to pull parsing back along from this parser's input to a new input.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that parses new input.</p>
+
+</div>
+<div role="article" class="function" id="parser.ignoreoutput()">
+    <h3>
+        <code><a href="#parser.ignoreoutput()">ignore​Output()</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">ignoreOutput</span>() -&gt; <a href="/swift-parsing/Skip"><span class="type">Skip</span></a>&lt;<span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that discards the output of this parser by returning <code>Void</code> instead.</p>
+
+</div>
+  <h4>Returns</h4>
+  <p>A parser that discards its output.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">P</span>&gt;(<span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">SkipFirst</span>&lt;<span class="keyword">Self</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == <span class="type">Void</span>  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, taking only the output of the
+given parser.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, ignoring the first's output.</p>
+
+</div>
+<div role="article" class="function" id="parser.skip(_:)">
+    <h3>
+        <code><a href="#parser.skip(_:)">skip(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">skip</span>&lt;<span class="variable">P</span>&gt;(<span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">SkipSecond</span>&lt;<span class="keyword">Self</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, taking only the output of this
+parser.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, ignoring the second's output.</p>
+
+</div>
+<div role="article" class="variable" id="parser.stream">
+    <h3>
+        <code><a href="#parser.stream">stream</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">var</span> <span class="variable">stream</span>: <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Stream</span>&lt;<span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Transforms the receiver parser into one that can parse streams of input.</p>
+
+</div>
+<div class="discussion">
+    <p>For example, the following parser can parse an integer followed by a newline from a collection
+of UTF8 bytes:</p>
+
+<html><body><pre class="highlight"><code><span class="variable">Parsers</span>.<span class="type">Integer</span>&lt;<span class="type">ArraySlice</span>&lt;<span class="type">UInt8</span>&gt;, <span class="type">Int</span>&gt;()
+  .<span class="variable">skip</span>(<span class="variable">StartsWith</span>(<span class="string literal">"</span><span class="string literal">\n</span><span class="string literal">"</span>.<span class="variable">utf8</span>))
+</code></pre></body></html>
+<p>This parser can be transformed into one that processes an incoming stream of UTF8 bytes:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">let</span> <span class="variable">newlineSeparatedIntegers</span> = <span class="variable">Parsers</span>.<span class="type">Integer</span>&lt;<span class="type">ArraySlice</span>&lt;<span class="type">UInt8</span>&gt;, <span class="type">Int</span>&gt;()
+  .<span class="variable">skip</span>(<span class="variable">StartsWith</span>(<span class="string literal">"</span><span class="string literal">\n</span><span class="string literal">"</span>.<span class="variable">utf8</span>))
+  .<span class="variable">stream</span>
+</code></pre></body></html>
+<p>And then it can be used on a stream, such as values coming from standard in:</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">var</span> <span class="variable">stdin</span> = <span class="variable">AnyIterator</span> {
+  <span class="variable">readLine</span>().<span class="variable">map</span> { <span class="variable">ArraySlice</span>(<span class="variable">$0</span>.<span class="variable">utf8</span>) }
+}
+
+<span class="variable">newlineSeparatedIntegers</span>
+  .<span class="variable">parse</span>(&amp;<span class="variable">stdin</span>)
+</code></pre></body></html>
+</div>
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take2</span>&lt;<span class="keyword">Self</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning both outputs in a
+tuple.</p>
+
+</div>
+<div class="discussion">
+    <p>This operator is used to gather up multiple values and can bundle them into a single data type
+when used alongside the <code>map(_:)</code> operator.</p>
+
+<p>In the following example, two <code>Double</code>s are parsed using <code>take(_:)-1fw8y</code> before they are
+combined into a <code>Point</code>.</p>
+
+<html><body><pre class="highlight"><code><span class="keyword">struct</span> <span class="type">Point</span> { <span class="keyword">var</span> <span class="variable">x</span>, <span class="variable">y</span>: <span class="type">Double</span> }
+
+<span class="keyword">var</span> <span class="variable">input</span> = <span class="string literal">"</span><span class="string literal">-1.5,1</span><span class="string literal">"</span>[...].<span class="variable">utf8</span>
+<span class="keyword">let</span> <span class="variable">output</span> = <span class="variable">Double</span>.<span class="variable">parser</span>()
+  .<span class="variable">skip</span>(<span class="string literal">"</span><span class="string literal">,</span><span class="string literal">"</span>)
+  .<span class="variable">take</span>(<span class="variable">Double</span>.<span class="variable">parser</span>())
+  .<span class="variable">map</span>(<span class="variable">Point</span>.<span class="variable">init</span>)
+  .<span class="variable">parse</span>(&amp;<span class="variable">input</span>) <span class="comment">// =&gt; Point(x: -1.5, y: 1)</span>
+<span class="variable">precondition</span>(<span class="variable">Substring</span>(<span class="variable">input</span>) == <span class="string literal">"</span><span class="string literal"/><span class="string literal">"</span>)
+</code></pre></body></html>
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take3</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take4</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take5</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">E</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take6</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">E</span>, <span class="variable">F</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take7</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">E</span>, <span class="variable">F</span>, <span class="variable">G</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take8</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">E</span>, <span class="variable">F</span>, <span class="variable">G</span>, <span class="variable">H</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take9</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">H</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">H</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">E</span>, <span class="variable">F</span>, <span class="variable">G</span>, <span class="variable">H</span>, <span class="variable">I</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take10</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">H</span>, <span class="type">I</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">H</span>, <span class="type">I</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="function" id="parser.take(_:)">
+    <h3>
+        <code><a href="#parser.take(_:)">take(_:​)</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">func</span> <span class="function">take</span>&lt;<span class="variable">A</span>, <span class="variable">B</span>, <span class="variable">C</span>, <span class="variable">D</span>, <span class="variable">E</span>, <span class="variable">F</span>, <span class="variable">G</span>, <span class="variable">H</span>, <span class="variable">I</span>, <span class="variable">J</span>, <span class="variable">P</span>&gt;(
+    <span class="keyword">_</span> <span class="variable">parser</span>: <span class="type">P</span>
+  ) -&gt; <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">Take11</span>&lt;<span class="keyword">Self</span>, <span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">H</span>, <span class="type">I</span>, <span class="type">J</span>, <span class="type">P</span>&gt;
+  <span class="keyword">where</span> <span class="type">P</span>: <a href="/swift-parsing/Parser"><span class="type">Parser</span></a>, <span class="type">P</span>.<span class="type">Input</span> == <span class="type">Input</span>, <span class="type">Output</span> == (<span class="type">A</span>, <span class="type">B</span>, <span class="type">C</span>, <span class="type">D</span>, <span class="type">E</span>, <span class="type">F</span>, <span class="type">G</span>, <span class="type">H</span>, <span class="type">I</span>, <span class="type">J</span>)  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Returns a parser that runs this parser and the given parser, returning this parser's outputs
+and the given parser's output in a flattened tuple.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>parser</th>
+    <td><code class="type">P</code></td>
+    <td><p>A parser to run immediately after this parser.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A parser that runs two parsers, returning both outputs in a flattened tuple.</p>
+
+</div>
+<div role="article" class="variable" id="parser.utf8">
+    <h3>
+        <code><a href="#parser.utf8">utf8</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">var</span> <span class="variable">utf8</span>: <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">SubstringToUTF8View</span>&lt;<span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Transforms the receiving parser on <code>Substring</code> into a parser on <code>Substring.UTF8View</code>.</p>
+
+</div>
+</div>
+<div role="article" class="variable" id="parser.utf8">
+    <h3>
+        <code><a href="#parser.utf8">utf8</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">var</span> <span class="variable">utf8</span>: <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">UnicodeScalarViewToUTF8View</span>&lt;<span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Transforms the receiving parser on <code>Substring.UnicodeScalarView</code> into a parser on
+<code>Substring.UTF8View</code>.</p>
+
+</div>
+</div>
+<div role="article" class="variable" id="parser.unicodescalars">
+    <h3>
+        <code><a href="#parser.unicodescalars">unicode​Scalars</a></code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="attribute">@</span><span class="attribute">inlinable</span>
+  <span class="keyword">public</span> <span class="keyword">var</span> <span class="variable">unicodeScalars</span>: <a href="/swift-parsing/Parsers"><span class="type">Parsers</span></a>.<span class="type">SubstringToUnicodeScalars</span>&lt;<span class="keyword">Self</span>&gt;  </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Transforms the receiving parser on <code>Substring</code> into a parser on <code>Substring.UnicodeScalarView</code>.</p>
+
+</div>
+</div>
+    </section>
+
+
+    <section id="requirements">
+        <h2>Requirements</h2>
+
+        <div role="article" class="associatedtype" id="parser.input">
+    <h3>
+        <code>Input</code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">associatedtype</span> <span class="variable">Input</span></body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>The kind of values this parser receives.</p>
+
+</div>
+</div>
+<div role="article" class="associatedtype" id="parser.output">
+    <h3>
+        <code>Output</code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">associatedtype</span> <span class="variable">Output</span></body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>The kind of values parsed by this parser.</p>
+
+</div>
+</div>
+<div role="article" class="function" id="parser.parse(_:)">
+    <h3>
+        <code>parse(_:​)</code>
+    </h3>
+    <div class="declaration">
+<pre class="highlight"><code><html><body><span class="keyword">func</span> <span class="function">parse</span>(<span class="keyword">_</span> <span class="variable">input</span>: <span class="keyword">inout</span> <span class="type">Input</span>) -&gt; <span class="type">Output</span>? </body></html></code></pre>
+</div>
+<div class="summary" role="doc-abstract">
+    <p>Attempts to parse a nebulous piece of data into something more well-structured.</p>
+
+</div>
+<h4>Parameters</h4>
+
+<table class="parameters">
+  <thead hidden>
+  <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+    <th>input</th>
+    <td><code class="type">inout Input</code></td>
+    <td><p>A nebulous piece of data to be parsed.</p>
+</td>
+</tr>
+  </tbody>
+</table>
+  <h4>Returns</h4>
+  <p>A more well-structured value parsed from the given input, or <code>nil</code>.</p>
+
+</div>
+    </section>
+        </article>
+    </main>
+
+    <footer>
+        <p>
+    Generated on <time datetime="2021-10-27T21:44:06+0000">October 27, 2021</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-rc.1</span>.
+</p>
+    </footer>
+</body>
+</html>

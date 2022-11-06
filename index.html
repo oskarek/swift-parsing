@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parsing - Parsing</title>
+    <link rel="stylesheet" type="text/css" href="/swift-parsing/all.css" media="all" />
+</head>
+<body>
+    <header>
+        <a href="/swift-parsing/">
+            <strong>
+                Parsing
+            </strong>
+            <span>Documentation</span>
+        </a>
+    </header>
+
+    <!--
+    <form class="search">
+        <input type="search" placeholder="Search" />
+    </form>
+    -->
+
+    <nav>
+        <div class="wrapper">
+            <h2>On This Page</h2>
+            <ol><li><a href="#classes">Classes</a></li><li><a href="#structures">Structures</a></li><li><a href="#enumerations">Enumerations</a></li><li><a href="#protocols">Protocols</a></li><li><a href="#extensions">Extensions</a></li></ol>
+        </div>
+    </nav>
+
+    <main>
+        <article>
+                <section id="classes">
+        <h2>Classes</h2>
+        <dl>
+            <dt class="class">
+    <a href="/swift-parsing/Lazy" title="class - Lazy">
+        Lazy
+    </a>
+</dt>
+<dd>
+    <p>A parser that waits for a call to its <code>parse(_:)</code> method before running the given closure to
+create a parser for the given input.</p>
+
+</dd>
+        </dl>
+    </section>
+    <section id="structures">
+        <h2>Structures</h2>
+        <dl>
+            <dt class="structure">
+    <a href="/swift-parsing/Always" title="structure - Always">
+        Always
+    </a>
+</dt>
+<dd>
+    <p>A parser that always succeeds by returning the provided value, but does not consume any of its
+input.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/AnyParser" title="structure - AnyParser">
+        Any​Parser
+    </a>
+</dt>
+<dd>
+    <p>A type-erased parser of <code>Output</code> from <code>Input</code>.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_BoolParser" title="structure - Parsers.BoolParser">
+        Parsers.​Bool​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a Boolean value from the beginning of a collection of UTF-8 code units.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringBoolParser" title="structure - Parsers.SubstringBoolParser">
+        Parsers.​Substring​Bool​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a Boolean value from the beginning of a substring.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_CompactMap" title="structure - Parsers.CompactMap">
+        Parsers.​Compact​Map
+    </a>
+</dt>
+<dd>
+    <p>A parser that outputs the non-<code>nil</code> results of calling the given transformation with the
+output of its upstream parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_DoubleParser" title="structure - Parsers.DoubleParser">
+        Parsers.​Double​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a double from the beginning of a collection of UTF-8 code units.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringDoubleParser" title="structure - Parsers.SubstringDoubleParser">
+        Parsers.​Substring​Double​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a double from the beginning of a substring.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_FloatParser" title="structure - Parsers.FloatParser">
+        Parsers.​Float​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a float from the beginning of a collection of UTF-8 code units.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringFloatParser" title="structure - Parsers.SubstringFloatParser">
+        Parsers.​Substring​Float​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a float from the beginning of a substring.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Float80Parser" title="structure - Parsers.Float80Parser">
+        Parsers.​Float80Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a float from the beginning of a collection of UTF-8 code units.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringFloat80Parser" title="structure - Parsers.SubstringFloat80Parser">
+        Parsers.​Substring​Float80Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a float from the beginning of a substring.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/End" title="structure - End">
+        End
+    </a>
+</dt>
+<dd>
+    <p>A parser that succeeds if the input is empty, and fails otherwise.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Fail" title="structure - Fail">
+        Fail
+    </a>
+</dt>
+<dd>
+    <p>A parser that always fails, no matter the input.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Filter" title="structure - Parsers.Filter">
+        Parsers.​Filter
+    </a>
+</dt>
+<dd>
+    <p>A parser that filters the output of an upstream parser when it does not satisfy a predicate.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/First" title="structure - First">
+        First
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes the first element from a collection.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/FirstWhere" title="structure - FirstWhere">
+        First​Where
+    </a>
+</dt>
+<dd>
+    
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_FlatMap" title="structure - Parsers.FlatMap">
+        Parsers.​Flat​Map
+    </a>
+</dt>
+<dd>
+    <p>A parser that transforms the output of another parser into a new parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_IntParser" title="structure - Parsers.IntParser">
+        Parsers.​Int​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes an integer (with an optional leading <code>+</code> or <code>-</code> sign) from the
+beginning of a collection of UTF8 code units.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringIntParser" title="structure - Parsers.SubstringIntParser">
+        Parsers.​Substring​Int​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes an integer (with an optional leading <code>+</code> or <code>-</code> sign) from the
+beginning of a substring using a UTF-8 parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Many" title="structure - Many">
+        Many
+    </a>
+</dt>
+<dd>
+    <p>A parser that attempts to run another parser as many times as specified, accumulating the result
+of the outputs.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Map" title="structure - Parsers.Map">
+        Parsers.​Map
+    </a>
+</dt>
+<dd>
+    <p>A parser that transforms the output of another parser with a given closure.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Newline" title="structure - Newline">
+        Newline
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a single newline from the beginning of the input.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/OneOfMany" title="structure - OneOfMany">
+        One​OfMany
+    </a>
+</dt>
+<dd>
+    <p>A parser that attempts to run a number of parsers till one succeeds.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_OneOf" title="structure - Parsers.OneOf">
+        Parsers.​One​Of
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs the first parser and, if it fails, runs the second parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_OptionalParser" title="structure - Parsers.OptionalParser">
+        Parsers.​Optional​Parser
+    </a>
+</dt>
+<dd>
+    <p>A parser that parses <code>nil</code> when its upstream parser fails.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Pipe" title="structure - Parsers.Pipe">
+        Parsers.​Pipe
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs this parser, pipes its output into the given parser, and returns the output
+of the given parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Prefix" title="structure - Prefix">
+        Prefix
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a subsequence from the beginning of its input.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/PrefixThrough" title="structure - PrefixThrough">
+        Prefix​Through
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a subsequence from the beginning of its input through a given sequence of
+elements.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/PrefixUpTo" title="structure - PrefixUpTo">
+        Prefix​UpTo
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a subsequence from the beginning of its input up to a given sequence of
+elements.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Pullback" title="structure - Parsers.Pullback">
+        Parsers.​Pullback
+    </a>
+</dt>
+<dd>
+    <p>Transforms the <code>Input</code> of a downstream parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Rest" title="structure - Rest">
+        Rest
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes everything to the end of the collection and returns it as its output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Skip" title="structure - Skip">
+        Skip
+    </a>
+</dt>
+<dd>
+    <p>A parser that discards the output of another parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SkipFirst" title="structure - Parsers.SkipFirst">
+        Parsers.​Skip​First
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs two parsers, one after the other, taking only the output of the second
+parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SkipSecond" title="structure - Parsers.SkipSecond">
+        Parsers.​Skip​Second
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs two parsers, one after the other, taking only the output of the first
+parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/StartsWith" title="structure - StartsWith">
+        Starts​With
+    </a>
+</dt>
+<dd>
+    <p>A parser that parses a sequence of elements from its input.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Stream" title="structure - Parsers.Stream">
+        Parsers.​Stream
+    </a>
+</dt>
+<dd>
+    <p>A parser that can parse streams of input.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take2" title="structure - Parsers.Take2">
+        Parsers.​Take2
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs two parsers, one after the other, and returns both outputs in a tuple.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take3" title="structure - Parsers.Take3">
+        Parsers.​Take3
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take4" title="structure - Parsers.Take4">
+        Parsers.​Take4
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take5" title="structure - Parsers.Take5">
+        Parsers.​Take5
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.\</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take6" title="structure - Parsers.Take6">
+        Parsers.​Take6
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take7" title="structure - Parsers.Take7">
+        Parsers.​Take7
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take8" title="structure - Parsers.Take8">
+        Parsers.​Take8
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take9" title="structure - Parsers.Take9">
+        Parsers.​Take9
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take10" title="structure - Parsers.Take10">
+        Parsers.​Take10
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_Take11" title="structure - Parsers.Take11">
+        Parsers.​Take11
+    </a>
+</dt>
+<dd>
+    <p>A parser that runs a parser of a tuple of outputs and another parser, one after the other,
+and returns a flattened tuple of the first parser's outputs and the second parser's output.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringToUTF8View" title="structure - Parsers.SubstringToUTF8View">
+        Parsers.​Substring​ToUTF8View
+    </a>
+</dt>
+<dd>
+    <p>A parser that transforms a parser on <code>Substring</code> into a parser on <code>Substring.UTF8View</code>.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_UnicodeScalarViewToUTF8View" title="structure - Parsers.UnicodeScalarViewToUTF8View">
+        Parsers.​Unicode​Scalar​View​ToUTF8View
+    </a>
+</dt>
+<dd>
+    <p>A parser that transforms a parser on <code>Substring.UnicodeScalarView</code> into a parser on
+<code>Substring.UTF8View</code>.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_UUIDParser" title="structure - Parsers.UUIDParser">
+        Parsers.​UUIDParser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a UUID from the beginning of a collection of UTF8 code units.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringUUIDParser" title="structure - Parsers.SubstringUUIDParser">
+        Parsers.​Substring​UUIDParser
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes a UUID from the beginning of a substring using a UTF-8 parser.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Parsers_SubstringToUnicodeScalars" title="structure - Parsers.SubstringToUnicodeScalars">
+        Parsers.​Substring​ToUnicode​Scalars
+    </a>
+</dt>
+<dd>
+    <p>A parser that transforms a parser on <code>Substring</code> into a parser on
+<code>Substring.UnicodeScalarView</code>.</p>
+
+</dd>
+<dt class="structure">
+    <a href="/swift-parsing/Whitespace" title="structure - Whitespace">
+        Whitespace
+    </a>
+</dt>
+<dd>
+    <p>A parser that consumes all ASCII whitespace from the beginning of the input.</p>
+
+</dd>
+        </dl>
+    </section>
+    <section id="enumerations">
+        <h2>Enumerations</h2>
+        <dl>
+            <dt class="enumeration">
+    <a href="/swift-parsing/Conditional" title="enumeration - Conditional">
+        Conditional
+    </a>
+</dt>
+<dd>
+    <p>A parser that can parse output from two types of parsers.</p>
+
+</dd>
+<dt class="enumeration">
+    <a href="/swift-parsing/Parsers" title="enumeration - Parsers">
+        Parsers
+    </a>
+</dt>
+<dd>
+    <p>A namespace for types that serve as parsers.</p>
+
+</dd>
+        </dl>
+    </section>
+    <section id="protocols">
+        <h2>Protocols</h2>
+        <dl>
+            <dt class="protocol">
+    <a href="/swift-parsing/Parser" title="protocol - Parser">
+        Parser
+    </a>
+</dt>
+<dd>
+    <p>Declares a type that can parse an <code>Input</code> value into an <code>Output</code> value.</p>
+
+</dd>
+        </dl>
+    </section>
+<section id="extensions">
+    <h2>Extensions</h2>
+    <dl>
+    <dt class="extension">
+    <a href="/swift-parsing/Array">Array</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/Bool">Bool</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/Double">Double</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/FixedWidthInteger">FixedWidthInteger</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/Float">Float</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/Optional">Optional</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/Parsers_StartsWith">Parsers.StartsWith</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/String">String</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/String_UTF8View">String.UTF8View</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/String_UnicodeScalarView">String.UnicodeScalarView</a>
+</dt>
+<dd></dd>
+<dt class="extension">
+    <a href="/swift-parsing/UUID">UUID</a>
+</dt>
+<dd></dd>
+    </dl>
+<section>
+        </article>
+    </main>
+
+    <footer>
+        <p>
+    Generated on <time datetime="2021-10-27T21:44:06+0000">October 27, 2021</time> using <a href="https://github.com/SwiftDocOrg/swift-doc">swift-doc</a> <span class="version">1.0.0-rc.1</span>.
+</p>
+    </footer>
+</body>
+</html>
